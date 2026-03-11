@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── TENANT (empresa cliente del SaaS) ─────────
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      Plan     @default(Basic)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  vehicles  Vehicle[]
+  clients   Client[]
+  rentals   Rental[]
+}
+
+// ── USER ─────────
+model User {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(Operator)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  rentals   Rental[]
+}
+
+// ── VEHICLE ────────────
+model Vehicle {
+  id           String        @id @default(cuid())
+  tenantId     String
+  plate        String
+  brand        String
+  model        String
+  year         Int
+  category     Category
+  color        String
+  dailyRate    Decimal       @db.Decimal(10, 2)
+  mileage      Int           @default(0)
+  fuelType     FuelType      @default(Gasoline)
+  transmission Transmission  @default(Automatic)
+  seats        Int           @default(5)
+  status       VehicleStatus @default(Available)
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  rentals      Rental[]
+
+  @@unique([tenantId, plate])
+}
+
+// ── CLIENT ─────
+model Client {
+  id          String    @id @default(cuid())
+  tenantId    String
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String
+  idType      IdType    @default(DUI)
+  idNumber    String
+  address     String?
+  licenseNum  String?
+  licenseExp  DateTime?
+  blacklisted Boolean   @default(false)
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  rentals     Rental[]
+
+  @@unique([tenantId, idNumber])
+}
+
+// ── RENTAL ────
+model Rental {
+  id            String       @id @default(cuid())
+  tenantId      String
+  vehicleId     String
+  clientId      String
+  userId        String
+  startDate     DateTime
+  endDate       DateTime
+  actualReturn  DateTime?
+  dailyRate     Decimal      @db.Decimal(10, 2)
+  totalDays     Int
+  subtotal      Decimal      @db.Decimal(10, 2)
+  discount      Decimal      @db.Decimal(10, 2) @default(0)
+  extraCharges  Decimal      @db.Decimal(10, 2) @default(0)
+  totalAmount   Decimal      @db.Decimal(10, 2)
+  deposit       Decimal      @db.Decimal(10, 2) @default(0)
+  mileageStart  Int          @default(0)
+  mileageEnd    Int?
+  fuelOut       FuelLevel    @default(Full)
+  fuelIn        FuelLevel?
+  status        RentalStatus @default(Active)
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  tenant        Tenant       @relation(fields: [tenantId], references: [id])
+  vehicle       Vehicle      @relation(fields: [vehicleId], references: [id])
+  client        Client       @relation(fields: [clientId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+  payments      Payment[]
+}
+
+// ── PAYMENT ──────────
+model Payment {
+  id        String        @id @default(cuid())
+  rentalId  String
+  amount    Decimal       @db.Decimal(10, 2)
+  method    PaymentMethod
+  type      PaymentType   @default(Payment)
+  reference String?
+  notes     String?
+  createdAt DateTime      @default(now())
+
+  rental    Rental        @relation(fields: [rentalId], references: [id])
+}
+
+// ── ENUMS ─────────
+enum Plan {
+  Basic
+  Pro
+  Enterprise
+}
+
+enum Role {
+  SuperAdmin
+  Admin
+  Operator
+  Auditor
+}
+
+enum Category {
+  Economy
+  Compact
+  Sedan
+  SUV
+  Pickup
+  Van
+  Luxury
+}
+
+enum VehicleStatus {
+  Available
+  Rented
+  Maintenance
+  Inactive
+}
+
+enum FuelType {
+  Gasoline
+  Diesel
+  Electric
+  Hybrid
+}
+
+enum Transmission {
+  Automatic
+  Manual
+}
+
+enum FuelLevel {
+  Full
+  ThreeQuarters
+  Half
+  Quarter
+  Empty
+}
+
+enum IdType {
+  DUI
+  Passport
+  NIT
+  Other
+}
+
+enum RentalStatus {
+  Reserved
+  Active
+  Completed
+  Cancelled
+}
+
+enum PaymentMethod {
+  Cash
+  Card
+  Transfer
+  Check
+}
+
+enum PaymentType {
+  Payment
+  Deposit
+  Refund
+  Extra
+}
