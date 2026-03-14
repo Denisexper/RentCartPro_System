@@ -1,0 +1,93 @@
+import { ClientRepository } from "../../repositories/client/client.repository";
+import { Request, Response } from "express";
+import { CreateClientInput } from "../../types/client/client.types";
+
+export class ClienteControllerService {
+  private repository: ClientRepository;
+
+  constructor(repository: ClientRepository) {
+    this.repository = repository;
+  }
+
+  async getById(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const response = await this.repository.getById(id);
+
+      if (!response) {
+        return res.status(404).json({ msj: "Client not found" });
+      }
+
+      return res.status(200).json({
+        msj: "Client retrieved sucessfully",
+        data: response,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+  async getAll(req: Request, res: Response) {
+    try {
+      const response = await this.repository.getAll();
+
+      if (response.length === 0) {
+        return res.status(200).json({
+          msj: "The list currently is Empty",
+          data: response,
+          total: response.length,
+        });
+      }
+
+      return res.status(200).json({
+        msj: "Clients retrived sucessfully",
+        data: response,
+        total: response.length,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async create(req: Request, res: Response) {
+    const data: CreateClientInput = req.body;
+
+    if(!data.firstName || !data.tenantId || !data.lastName || !data.phone || !data.idNumber){
+        return res.status(400).json({
+            msj: "Faltan campos obligatorios",
+            fields: {
+                firstName: !data.firstName ? "Required": "OK",
+                tenanId: !data.tenantId ? "Required": "OK",
+                lastName: !data.lastName ? "Required": "OK",
+                phone: !data.phone ? "Required": "OK",
+                idNumber: !data.idNumber ? "Required" : "OK"
+            }
+        })
+    }
+    try {
+      const response = await this.repository.create(data);
+
+      return res.status(201).json({
+        msj: "Client Created sucessfully",
+        client: {
+          name: response.firstName,
+          lastName: response.lastName,
+          address: response.address,
+          createdAt: response.createdAt,
+          updatedAt: response.updatedAt,
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+}
