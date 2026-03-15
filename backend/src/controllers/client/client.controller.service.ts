@@ -1,6 +1,9 @@
 import { ClientRepository } from "../../repositories/client/client.repository";
 import { Request, Response } from "express";
-import { CreateClientInput } from "../../types/client/client.types";
+import {
+  CreateClientInput,
+  UpdateClientInput,
+} from "../../types/client/client.types";
 
 export class ClienteControllerService {
   private repository: ClientRepository;
@@ -58,17 +61,23 @@ export class ClienteControllerService {
   async create(req: Request, res: Response) {
     const data: CreateClientInput = req.body;
 
-    if(!data.firstName || !data.tenantId || !data.lastName || !data.phone || !data.idNumber){
-        return res.status(400).json({
-            msj: "Faltan campos obligatorios",
-            fields: {
-                firstName: !data.firstName ? "Required": "OK",
-                tenanId: !data.tenantId ? "Required": "OK",
-                lastName: !data.lastName ? "Required": "OK",
-                phone: !data.phone ? "Required": "OK",
-                idNumber: !data.idNumber ? "Required" : "OK"
-            }
-        })
+    if (
+      !data.firstName ||
+      !data.tenantId ||
+      !data.lastName ||
+      !data.phone ||
+      !data.idNumber
+    ) {
+      return res.status(400).json({
+        msj: "Faltan campos obligatorios",
+        fields: {
+          firstName: !data.firstName ? "Required" : "OK",
+          tenanId: !data.tenantId ? "Required" : "OK",
+          lastName: !data.lastName ? "Required" : "OK",
+          phone: !data.phone ? "Required" : "OK",
+          idNumber: !data.idNumber ? "Required" : "OK",
+        },
+      });
     }
     try {
       const response = await this.repository.create(data);
@@ -76,7 +85,8 @@ export class ClienteControllerService {
       return res.status(201).json({
         msj: "Client Created sucessfully",
         client: {
-          name: response.firstName,
+          id: response.id,
+          firstName: response.firstName,
           lastName: response.lastName,
           address: response.address,
           createdAt: response.createdAt,
@@ -84,6 +94,62 @@ export class ClienteControllerService {
         },
       });
     } catch (error: any) {
+      res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async update(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    const data: UpdateClientInput = req.body;
+
+    if (!data || Object.keys(data).length === 0) {
+      return res.status(400).json({ msj: "No data provided for update" });
+    }
+
+    try {
+      const response = await this.repository.update(id, data);
+
+      return res.status(200).json({
+        msj: "Client updated successfully",
+        data: response,
+      });
+    } catch (error: any) {
+      if (error.code === "P2025") {
+        // Código de Prisma para "Record not found"
+        return res.status(404).json({ msj: "Client not found" });
+      }
+      res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async delete(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const response = await this.repository.delete(id);
+
+      return res.status(200).json({
+        msj: "Client deleted successfully",
+        ClientDeleted: {
+          id: response.id,
+          fname: `${response.firstName} ${response.lastName}`
+        },
+      });
+    } catch (error: any) {
+      //excepcion si el id no existe
+      if (error.code === "P2025") {
+        return res.status(404).json({
+          msj: "Client not found",
+        });
+      }
+
       res.status(500).json({
         msj: "Server error",
         error: error.message,
