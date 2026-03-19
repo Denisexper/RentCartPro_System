@@ -1,6 +1,6 @@
-import express from "express"
 import { PORT } from "./services/enviroments.service";
-import { Request, Response } from "express";
+import express, { Request, Response } from "express";
+import { AppRoutes } from "./routes/app.routes";
 
 const app = express();
 
@@ -10,6 +10,9 @@ app.use(express.json());
 app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({msj: 'rentCart API funcionando!'})
 })
+
+app.use('/api/v1', AppRoutes.routes);
+
 
 app.listen(PORT, () => {
     console.log(`server up in http://localhost:${PORT}`)

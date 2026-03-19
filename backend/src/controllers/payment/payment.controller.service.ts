@@ -1,0 +1,93 @@
+import { PaymentRepositoryInterface } from "../../interfaces/payment/payment.repository.interface";
+import { Request, Response } from "express";
+import {
+  CreatePaymentInput,
+  UpdatePaymentInput,
+} from "../../types/payment/payment.types";
+
+export class PaymentControllerService {
+  constructor(private readonly repository: PaymentRepositoryInterface) {}
+
+  async getById(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const response = await this.repository.getById(id);
+
+      if (!response) {
+        return res.status(404).json({
+          msj: "Payment not found",
+        });
+      }
+
+      return res.status(200).json({
+        msj: "Payment retrived successfully",
+        data: {
+          ...response,
+          amount: response.amount.toString(),
+        },
+      });
+    } catch (error: any) {
+      console.error(`[Payment controller] Error en getById(${id}):`, error);
+      return res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async getAll(req: Request, res: Response) {
+    try {
+      const response = await this.repository.getAll();
+
+      return res.status(200).json({
+        msj:
+          response.length > 0
+            ? "Payments retrived successfully"
+            : "Payments list empty",
+        data: response,
+      });
+    } catch (error: any) {
+      console.error("[PaymentController] Error en getAll():", error);
+      return res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async create(req: Request, res: Response) {
+    const data: CreatePaymentInput = req.body;
+
+    if (!data.rentalId || !data.amount || !data.method) {
+      return res.status(400).json({
+        msj: "Missing required fields ",
+        fields: {
+          rentalId: !data.rentalId ? "Required" : "OK",
+          amount: !data.amount ? "Required" : "OK",
+          method: !data.method ? "Required" : "OK",
+        },
+      });
+    }
+    try {
+      const response = await this.repository.create(data);
+
+      return res.status(201).json({
+        msj: "Payment created successfully",
+        data: {
+          id: response.id,
+          rentalId: response.rentalId,
+          amount: response.amount,
+          method: response.method,
+          notes: response.notes,
+        },
+      });
+    } catch (error: any) {
+      console.error("[PaymentController] Error en create():", error);
+      return res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+}

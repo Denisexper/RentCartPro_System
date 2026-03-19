@@ -72,7 +72,7 @@ export class ClienteControllerService {
         msj: "Faltan campos obligatorios",
         fields: {
           firstName: !data.firstName ? "Required" : "OK",
-          tenanId: !data.tenantId ? "Required" : "OK",
+          tenantId: !data.tenantId ? "Required" : "OK",
           lastName: !data.lastName ? "Required" : "OK",
           phone: !data.phone ? "Required" : "OK",
           idNumber: !data.idNumber ? "Required" : "OK",
