@@ -30,6 +30,27 @@ export class RentalControllerService {
     }
   }
 
+  async getAll (req: Request, res: Response) {
+
+    try {
+      
+      const response = await this.repository.getAll()
+
+      return res.status(200).json({
+        msj: response.length > 0
+          ? "Rental retrived successfully"
+          : "Rental list empty",
+        data: response
+      })
+    } catch (error: any) {
+      console.error(`[RentalController] Error en getAll():`, error);
+      return res.status(500).json({
+        msj: "Server Error",
+        error: error.message
+      })
+    }
+  }
+
   async create(req: Request, res: Response) {
     const data: CreateRentalInput = req.body;
 

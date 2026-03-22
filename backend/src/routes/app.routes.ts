@@ -11,23 +11,34 @@ import { PaymentRepository } from "../repositories/payment/payment.repository";
 import { PaymentControllerService } from "../controllers/payment/payment.controller.service";
 import { PaymentRoutes } from "./payment/payment.routes";
 
+//importaciones modulo rental
+import { RentalRepository } from "../repositories/rental/rental.repository";
+import { RentalControllerService } from "../controllers/rental/rental.controller.service";
+import { RentalRoutes } from "./rental/rental.routes";
+
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
 
-    // --- Configuración Módulo Clientes ---
+    // --- Configuración Modulo Clientes ---
     const clientRepo = new ClientRepository(prisma);
     const clientCtrl = new ClienteControllerService(clientRepo);
     const clientRoutes = new ClientRoutes(Router(), clientCtrl);
 
-    // --- Configuración Módulo Pagos ---
+    // --- Configuración Modulo Pagos ---
     const paymentRepo = new PaymentRepository(prisma);
     const paymentCtrl = new PaymentControllerService(paymentRepo);
     const paymentRoutes = new PaymentRoutes(Router(), paymentCtrl);
 
+    // --- configuracion Modulo Rental ---
+    const rentalRepo = new RentalRepository(prisma)
+    const rentalCtrl = new RentalControllerService(rentalRepo)
+    const rentalRoutes = new RentalRoutes(Router(), rentalCtrl);
+
     // --- Definición de Prefijos de Ruta ---
     router.use("/clients", clientRoutes.initRoutes());
     router.use("/payments", paymentRoutes.initRoutes());
+    router.use("/rentals", rentalRoutes.initRoutes());
 
     return router;
   }
