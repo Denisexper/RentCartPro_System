@@ -1,0 +1,205 @@
+import { Request, Response } from "express";
+import { TenantRepositoryInterface } from "../../interfaces/tenant/tenant.repository.interface";
+import {
+  CreateTenantInput,
+  UpdateTenantInput,
+} from "../../types/tenant/tenant.types";
+
+export class TenantControllerService {
+  private repository: TenantRepositoryInterface;
+
+  constructor(repository: TenantRepositoryInterface) {
+    this.repository = repository;
+  }
+
+  async getById(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const response = await this.repository.getById(id);
+
+      if (!response) {
+        return res.status(404).json({
+          msj: "Tenant not found",
+        });
+      }
+
+      return res.status(200).json({
+        msj: "Tenant retrived successfully",
+        data: {
+          id: response.id,
+          name: response.name,
+          slug: response.slug,
+          plan: response.plan,
+          active: response.active,
+        },
+      });
+    } catch (error: any) {
+      console.error(`[TenantController] Error en getById(${id}):`, error);
+
+      //general erros
+      return res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async getAll(req: Request, res: Response) {
+    try {
+      const response = await this.repository.getAll();
+
+      //solo para mostrar campos especificos, visualmente
+      const cleanData = response.map((tenant) => ({
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        plan: tenant.plan,
+        active: tenant.active,
+      }));
+
+      return res.status(200).json({
+        msj:
+          cleanData.length > 0
+            ? "Tenant retrived successfully"
+            : "Tenant list empty",
+        data: cleanData,
+      });
+    } catch (error: any) {
+      console.error(`[TenantController] Error en getAll():`, error);
+      return res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async create(req: Request, res: Response) {
+    const data: CreateTenantInput = req.body;
+
+    if (!data.name || !data.slug || !data.plan || !data.active) {
+      return res.status(400).json({
+        msj: "Missing requireds fields",
+        fiels: {
+          name: !data.name ? "Required" : "OK",
+          slug: !data.slug ? "Required" : "OK",
+          plan: !data.plan ? "Required" : "OK",
+          active: !data.active ? "Required" : "OK",
+        },
+      });
+    }
+    try {
+      const response = await this.repository.create(data);
+
+      return res.status(201).json({
+        msj: "Tenant created successfully",
+        tenant: {
+          id: response.id,
+          name: response.name,
+          slug: response.slug,
+          plan: response.plan,
+          active: response.active,
+        },
+      });
+    } catch (error: any) {
+      console.error(`[TenantController] Error en create():`, error);
+      return res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async update(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    const data: UpdateTenantInput = req.body;
+
+    const tenantExist = await this.repository.getById(id);
+
+    if (!tenantExist) {
+      return res.status(404).json({
+        msj: "Tenant not found",
+      });
+    }
+
+    if (!data || Object.keys(data).length === 0) {
+      return res.status(400).json({ msj: "No data provided" });
+    }
+
+    //validar los espacios en blanco
+    const values = Object.values(data);
+    const hasContent = values.some(
+      (val) =>
+        val !== null && val !== undefined && val.toString().trim() !== "",
+    );
+
+    if (!hasContent) {
+      return res.status(400).json({ msj: "Provided fields cannot be empty" });
+    }
+
+    try {
+      const response = await this.repository.update(id, data);
+
+      return res.status(200).json({
+        msj: "Tenant updated successfully",
+        data: {
+          id: response.id,
+          name: response.name,
+          slug: response.slug,
+          plan: response.plan,
+          active: response.active,
+        },
+      });
+    } catch (error: any) {
+      console.error(`[TenantController] Error en update(${id}):`, error);
+      if (error.code === "P2025") {
+        // Código de Prisma para "Record not found"
+        return res.status(404).json({ msj: "Tenant not found" });
+      }
+
+      res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+
+  async delete(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    try {
+      const response = await this.repository.delete(id);
+
+      if (!response) {
+        return res.status(404).json({
+          msj: "Tenant not found",
+        });
+      }
+
+      return res.status(200).json({
+        msj: "Tenant deleted successfully",
+        data: {
+          id: response.id,
+          name: response.name,
+          slug: response.slug,
+          plan: response.plan,
+          active: response.active,
+        },
+      });
+    } catch (error: any) {
+      console.error(`[TenantController] Error en delete(${id}):`, error);
+
+      if (error.code === "P2025") {
+        return res.status(404).json({
+          msj: "Tenant not found2",
+        });
+      }
+
+      return res.status(500).json({
+        msj: "Server error",
+        error: error.message,
+      });
+    }
+  }
+}

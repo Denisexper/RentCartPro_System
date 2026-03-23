@@ -3,20 +3,78 @@ import { TenantRepositoryInterface } from "../../interfaces/tenant/tenant.reposi
 import { CreateTenantInput, UpdateTenantInput } from "../../types/tenant/tenant.types";
 
 export class TenantRepository implements TenantRepositoryInterface {
-    getById(id: string): Promise<Tenant | null> {
-        throw new Error("Method not implemented.");
+
+    private prisma: PrismaClient;
+
+    constructor (
+        prisma: PrismaClient
+    ){
+        this.prisma = prisma
     }
-    getAll(): Promise<Tenant[]> {
-        throw new Error("Method not implemented.");
+
+    async getById(id: string): Promise<Tenant | null> {
+        try {
+            
+            const response = await this.prisma.tenant.findUnique({
+                where: { id }
+            })
+            return response
+
+        } catch (error) {
+            
+            throw new Error (`${error}`)
+        }
     }
-    create(data: CreateTenantInput): Promise<Tenant> {
-        throw new Error("Method not implemented.");
+    async getAll(): Promise<Tenant[]> {
+        try {
+          
+            const response = await this.prisma.tenant.findMany();
+
+            return response;
+        } catch (error) {
+            
+            throw new Error (`${error}`);
+        }
     }
-    update(id: string, data: UpdateTenantInput): Promise<Tenant> {
-        throw new Error("Method not implemented.");
+    async create(data: CreateTenantInput): Promise<Tenant> {
+        try {
+            
+            const response = await this.prisma.tenant.create({
+                data: data
+            });
+
+            return response;
+        } catch (error) {
+            
+            throw new Error (`${error}`);
+        }
     }
-    delete(id: string): Promise<Tenant> {
-        throw new Error("Method not implemented.");
+    async update(id: string, data: UpdateTenantInput): Promise<Tenant> {
+        try {
+            
+            const response = await this.prisma.tenant.update({
+                where: { id },
+                data: data
+            });
+
+            return response;
+        } catch (error) {
+            
+            throw new Error (`${error}`);
+        }
+    }
+    async delete(id: string): Promise<Tenant> {
+        try {
+            
+            const response = await this.prisma.tenant.delete({
+                where: { id }
+            });
+
+            return response
+        } catch (error) {
+            
+            throw new Error (`${error}`);
+        }
     }
 
 }

@@ -19,7 +19,7 @@ export class RentalRepository implements RentalRepositoryInterface {
             return response;
         } catch (error) {
 
-            throw error;
+            throw new Error (`${error}`)
         }
     }
 
@@ -30,7 +30,7 @@ export class RentalRepository implements RentalRepositoryInterface {
             return response;
         } catch (error) {
 
-            throw error;
+            throw new Error (`${error}`)
         }
     }
 
@@ -41,7 +41,7 @@ export class RentalRepository implements RentalRepositoryInterface {
             });
             return response;
         } catch (error) {
-            throw error;
+            throw new Error (`${error}`)
         }
     }
 
@@ -53,7 +53,7 @@ export class RentalRepository implements RentalRepositoryInterface {
             });
             return response;
         } catch (error) {
-            throw error;
+            throw new Error (`${error}`)
         }
     }
 
@@ -64,7 +64,7 @@ export class RentalRepository implements RentalRepositoryInterface {
             });
             return response;
         } catch (error) {
-            throw error;
+            throw new Error (`${error}`)
         }
     }
 }
