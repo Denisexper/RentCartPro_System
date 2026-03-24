@@ -3,7 +3,7 @@ import type { CreateVehicleInput, UpdateVehicleInput } from "../../types/vehicle
 
 export interface VehicleRepositoryInterface {
 
-    getById(id: string): Promise<Vehicle>
+    getById(id: string): Promise<Vehicle | null>
     getAll(): Promise<Vehicle[]>
     create(data: CreateVehicleInput): Promise<Vehicle>
     update(id: string, data: UpdateVehicleInput): Promise<Vehicle>
