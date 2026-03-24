@@ -16,6 +16,12 @@ import { RentalRepository } from "../repositories/rental/rental.repository";
 import { RentalControllerService } from "../controllers/rental/rental.controller.service";
 import { RentalRoutes } from "./rental/rental.routes";
 
+
+//importaciones modulo tenant
+import { TenantRepository } from "../repositories/tenant/tenant.repository";
+import { TenantControllerService } from "../controllers/tenant/tenant.controller.service";
+import { TenantRoutes } from "./tenant/tenant.routes";
+
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
@@ -35,10 +41,16 @@ export class AppRoutes {
     const rentalCtrl = new RentalControllerService(rentalRepo)
     const rentalRoutes = new RentalRoutes(Router(), rentalCtrl);
 
+    // --- configuracon Modulo Tenant ---
+    const tenantRepo = new TenantRepository(prisma)
+    const tenantCtrl = new TenantControllerService(tenantRepo)
+    const tenantRoutes = new TenantRoutes(Router(), tenantCtrl)
+
     // --- Definición de Prefijos de Ruta ---
     router.use("/clients", clientRoutes.initRoutes());
     router.use("/payments", paymentRoutes.initRoutes());
     router.use("/rentals", rentalRoutes.initRoutes());
+    router.use("/tenant", tenantRoutes.initRoutes());
 
     return router;
   }
