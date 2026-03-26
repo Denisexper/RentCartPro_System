@@ -22,6 +22,11 @@ import { TenantRepository } from "../repositories/tenant/tenant.repository";
 import { TenantControllerService } from "../controllers/tenant/tenant.controller.service";
 import { TenantRoutes } from "./tenant/tenant.routes";
 
+//importaciones modulo de Users
+import { UserRepository } from "../repositories/user/user.repository";
+import { UserControllerService } from "../controllers/user/user.controller.service";
+import { UserRoutes } from "./user/user.routes";
+
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
@@ -46,11 +51,17 @@ export class AppRoutes {
     const tenantCtrl = new TenantControllerService(tenantRepo)
     const tenantRoutes = new TenantRoutes(Router(), tenantCtrl)
 
+    // --- configuracion Modulo Users ---
+    const userRepo = new UserRepository(prisma)
+    const userCtrl = new UserControllerService(userRepo)
+    const userRoutes = new UserRoutes(Router(),userCtrl)
+
     // --- Definición de Prefijos de Ruta ---
     router.use("/clients", clientRoutes.initRoutes());
     router.use("/payments", paymentRoutes.initRoutes());
     router.use("/rentals", rentalRoutes.initRoutes());
-    router.use("/tenant", tenantRoutes.initRoutes());
+    router.use("/tenants", tenantRoutes.initRoutes());
+    router.use("/users", userRoutes.initRoutes());
 
     return router;
   }
