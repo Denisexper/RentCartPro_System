@@ -65,7 +65,7 @@ export class UserControllerService {
         total: response.length,
       });
     } catch (error: any) {
-      console.error(`{UserController} Error en getAll()`, error);
+      console.error(`[UserController] Error en getAll()`, error);
 
       return res.status(500).json({
         msj: "Server error",
@@ -87,7 +87,7 @@ export class UserControllerService {
     ) {
       return res.status(400).json({
         mjs: "Missing requireds fields",
-        fiels: {
+        fields: {
           tenantId: !data.tenantId ? "Required" : "OK",
           name: !data.name ? "Required" : "OK",
           email: !data.email ? "Required" : "OK",
