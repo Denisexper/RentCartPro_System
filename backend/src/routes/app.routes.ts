@@ -27,6 +27,11 @@ import { UserRepository } from "../repositories/user/user.repository";
 import { UserControllerService } from "../controllers/user/user.controller.service";
 import { UserRoutes } from "./user/user.routes";
 
+//imporatciones modulo vehicle
+import { VehicleRepository } from "../repositories/vehicle/vehicle.repository";
+import { VehicleControllerService } from "../controllers/vehicle/vehicle.controller.service";
+import { VehicleRoutes } from "./vehicle/vehicle.routes";
+
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
@@ -56,12 +61,18 @@ export class AppRoutes {
     const userCtrl = new UserControllerService(userRepo)
     const userRoutes = new UserRoutes(Router(),userCtrl)
 
+    // --- configuracion Modulo Users ---
+    const vehicleRepo = new VehicleRepository(prisma)
+    const vehicleCtrl = new VehicleControllerService(vehicleRepo)
+    const vehicleRoutes = new VehicleRoutes(Router(), vehicleCtrl)
+
     // --- Definición de Prefijos de Ruta ---
     router.use("/clients", clientRoutes.initRoutes());
     router.use("/payments", paymentRoutes.initRoutes());
     router.use("/rentals", rentalRoutes.initRoutes());
     router.use("/tenants", tenantRoutes.initRoutes());
     router.use("/users", userRoutes.initRoutes());
+    router.use("/vehicles", vehicleRoutes.initRoutes());
 
     return router;
   }

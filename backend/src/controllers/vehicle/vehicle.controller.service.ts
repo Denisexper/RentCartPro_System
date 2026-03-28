@@ -107,7 +107,6 @@ export class VehicleControllerService {
       !data.category ||
       data.dailyRate === undefined
     ) {
-
       return res.status(400).json({
         msj: "Missing requireds fields",
         fields: {
@@ -168,6 +167,127 @@ export class VehicleControllerService {
         msj: "Server error",
         error: error.message,
       });
+    }
+  }
+
+  async update(
+    req: Request<{ id: string }, {}, {}, { tenantId: string }>,
+    res: Response,
+  ) {
+    const { id } = req.params;
+
+    const { tenantId } = req.query;
+
+    const data: UpdateVehicleInput = req.body;
+
+    // Validar que el body no esté vacío
+    if (!data || Object.keys(data).length === 0) {
+      return res.status(400).json({ msj: "No data provided for update" });
+    }
+
+    //Validar espacios en blanco
+    const values = Object.values(data);
+    const hasContent = values.some(
+      (val) =>
+        val !== null && val !== undefined && val.toString().trim() !== "",
+    );
+
+    if (!hasContent) {
+      return res.status(400).json({ msj: "Provided fields cannot be empty" });
+    }
+
+    // Validamos el precio SOLO si viene en la petición
+    if (data.dailyRate !== undefined && Number(data.dailyRate) <= 0) {
+      return res.status(400).json({ msj: "Daily rate must be greater than 0" });
+    }
+
+    // Validamos el año SOLO si viene en la petición
+    if (data.year !== undefined && (data.year < 1900 || data.year > 2027)) {
+      return res
+        .status(400)
+        .json({ msj: "Year must be between 1900 and 2027" });
+    }
+
+    try {
+      const response = await this.repository.update(id, data);
+
+      if (!response) {
+        return res.status(404).json({
+          msj: "vehicle not found",
+        });
+      }
+
+      return res.status(200).json({
+        msj: "vehicle updated successfully",
+        data: {
+          id: response.id,
+          tenantId: response.tenantId,
+          plate: response.plate,
+          brand: response.brand,
+          model: response.model,
+          year: response.year,
+          category: response.category,
+          dailyRate: response.dailyRate,
+        }
+      });
+    } catch (error: any) {
+      console.error(`[VehicleController] Error en update(${id}):`, error);
+
+      if (error.code === "P2025") {
+        return res.status(404).json({
+          msj: "Vehicle not found2",
+        });
+      }
+
+      return res.status(500).json({
+        msj: "Server Error",
+        error: error.message,
+      });
+    }
+  }
+
+  async delete(req: Request<{id: string}, {}, {}, {tenantId: string}>, res: Response){
+
+    const { id } = req.params;
+
+    const { tenantId } = req.query;
+
+    try {
+      
+      const response = await this.repository.delete(id)
+
+      if(!response){
+        return res.status(404).json({
+          msj: "Vehicle not found"
+        })
+      }
+
+      return res.status(200).json({
+        msj: "Vehicle deleted successfully",
+        data: {
+          id: response.id,
+          tenantId: response.tenantId,
+          plate: response.plate,
+          brand: response.brand,
+          model: response.model,
+          year: response.year,
+          category: response.category,
+          dailyRate: response.dailyRate,
+        }
+      })
+    } catch (error: any) {
+      console.error(`[VehicleController] Error in delete(${id})`, error)
+
+      if(error.code === 'P2025'){
+        return res.status(404).json({
+          msj: "Vehicle not found"
+        })
+      }
+
+      return res.status(500).json({
+        msj: "Server Error",
+        error: error.message
+      })
     }
   }
 }
