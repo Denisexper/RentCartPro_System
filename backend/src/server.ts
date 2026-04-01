@@ -1,6 +1,7 @@
 import { PORT } from "./services/enviroments.service";
 import express, { Request, Response } from "express";
 import { AppRoutes } from "./routes/app.routes";
+import { ErrorMiddleware } from "./middlewares/error.middleware";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.get('/health', (req: Request, res: Response) => {
 })
 
 app.use('/api/v1', AppRoutes.routes);
+app.use(ErrorMiddleware);
 
 
 app.listen(PORT, () => {

@@ -1,5 +1,5 @@
 import { ClientRepository } from "../../repositories/client/client.repository";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
   CreateClientInput,
   UpdateClientInput,
@@ -12,14 +12,14 @@ export class ClienteControllerService {
     this.repository = repository;
   }
 
-  async getById(req: Request<{ id: string }>, res: Response) {
+  async getById(req: Request<{ id: string }>, res: Response, next: NextFunction) {
     const { id } = req.params;
 
     try {
       const response = await this.repository.getById(id);
 
       if (!response) {
-        return res.status(404).json({ msj: "Client not found" });
+        return next({status: 404, message: "Client not found"});
       }
 
       return res.status(200).json({
@@ -27,10 +27,7 @@ export class ClienteControllerService {
         data: response,
       });
     } catch (error: any) {
-      res.status(500).json({
-        msj: "Server error",
-        error: error.message,
-      });
+      next(error)
     }
   }
   async getAll(req: Request, res: Response) {
