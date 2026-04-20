@@ -1,11 +1,11 @@
 import prisma from "../../dataBase/prisma";
 import { Request, Response, NextFunction } from "express";
-import { registerInput } from "../../types/auth/auth.type";
+import { RegisterInput } from "../../types/auth/auth.type";
 import { EncryptService } from "../../services/encrypt.service";
 
-export const registerControllerService = async (req: Request, res: Response, next: NextFunction) => {
+export const RegisterControllerService = async (req: Request, res: Response, next: NextFunction) => {
     
-   const data: registerInput = req.body;
+   const data: RegisterInput = req.body;
    
    try {
     
