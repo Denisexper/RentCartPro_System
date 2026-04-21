@@ -32,6 +32,11 @@ import { VehicleRepository } from "../repositories/vehicle/vehicle.repository";
 import { VehicleControllerService } from "../controllers/vehicle/vehicle.controller.service";
 import { VehicleRoutes } from "./vehicle/vehicle.routes";
 
+//importaciones modulo auth
+import { AuthRepository } from "../repositories/auth/auth.repository";
+import { AuthControllerService } from "../controllers/auth/auth.controller.service";
+import { AuthRoutes, AuthRoutes } from "./auth/auth.routes";
+
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
@@ -65,6 +70,11 @@ export class AppRoutes {
     const vehicleRepo = new VehicleRepository(prisma)
     const vehicleCtrl = new VehicleControllerService(vehicleRepo)
     const vehicleRoutes = new VehicleRoutes(Router(), vehicleCtrl)
+
+    // --- configuracion Modulo Auth ---
+    const authRepo = new AuthRepository(prisma)
+    // const authCtrl = new AuthControllerService(authRepo)
+    //const authRoutes = new AuthRoutes(Router(), authCtrl)
 
     // --- Definición de Prefijos de Ruta ---
     router.use("/clients", clientRoutes.initRoutes());
