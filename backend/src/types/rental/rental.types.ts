@@ -1,13 +1,38 @@
-import { Rental } from "@prisma/client"
+import { FuelLevel, Rental } from "@prisma/client";
 
-//omitir campos automaticos en la creacion
-export type CreateRentalInput = Omit<Rental, 'id' | 'createdAt' | 'updatedAt'> & {
-    discount?: Rental['discount'];
-    extraCharges?: Rental['extraCharges'];
-    deposit?: Rental['deposit'];
-    fueltOut?: Rental['fuelOut'];
-    status?: Rental['status']
-}
+// Sobreescribe los campos Decimal a number para facilitar el manejo en controllers
+export type CreateRentalInput = Omit<
+  Rental,
+  "id" | "createdAt" | "updatedAt" | "dailyRate" | "subtotal" | "discount" | "extraCharges" | "totalAmount" | "deposit"
+> & {
+  dailyRate: number;
+  subtotal: number;
+  discount: number;
+  extraCharges: number;
+  totalAmount: number;
+  deposit: number;
+};
 
-//para update solo usa partial de los campos editables
-export type UpdateRentalInput = Partial<CreateRentalInput>
+export type UpdateRentalInput = Partial<CreateRentalInput>;
+
+// Lo que el cliente manda en el body al crear un alquiler
+export type CreateRentalBody = {
+  vehicleId: string;
+  clientId: string;
+  startDate: string;
+  endDate: string;
+  deposit?: number;
+  discount?: number;
+  fuelOut?: FuelLevel;
+  mileageStart?: number;
+  notes?: string;
+};
+
+// Lo que el cliente manda al devolver el vehículo
+export type ReturnRentalInput = {
+  actualReturn?: Date;
+  mileageEnd?: number;
+  fuelIn?: FuelLevel;
+  extraCharges?: number;
+  notes?: string;
+};

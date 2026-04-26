@@ -1,70 +1,112 @@
-import { Rental, PrismaClient } from "@prisma/client";
+import { Rental, Vehicle, Client, PrismaClient } from "@prisma/client";
 import { RentalRepositoryInterface } from "../../interfaces/rental/rental.repository.interface";
-import { CreateRentalInput, UpdateRentalInput } from "../../types/rental/rental.types";
+import {
+  CreateRentalInput,
+  UpdateRentalInput,
+  ReturnRentalInput,
+} from "../../types/rental/rental.types";
 
 export class RentalRepository implements RentalRepositoryInterface {
+  private prisma: PrismaClient;
 
-    private prisma: PrismaClient;
+  constructor(prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
 
-    constructor(prisma: PrismaClient) {
-        
-        this.prisma = prisma;
-    }
+  async getById(id: string): Promise<Rental | null> {
+    return this.prisma.rental.findUnique({
+      where: { id },
+      include: { vehicle: true, client: true, user: true, payments: true },
+    });
+  }
 
-    async getById(id: string): Promise<Rental | null> {
-        try {
-            const response = await this.prisma.rental.findUnique({
-                where: { id }
-            });
-            return response;
-        } catch (error) {
+  async getAll(tenantId: string): Promise<Rental[]> {
+    return this.prisma.rental.findMany({
+      where: { tenantId },
+      include: { vehicle: true, client: true, user: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
 
-            throw new Error (`${error}`)
-        }
-    }
+  async create(data: CreateRentalInput): Promise<Rental> {
+    // Transaccion: crear rental + cambiar vehiculo a Rented atomicamente
+    return this.prisma.$transaction(async (tx) => {
+      const rental = await tx.rental.create({ data });
+      await tx.vehicle.update({
+        where: { id: data.vehicleId },
+        data: { status: "Rented" },
+      });
+      return rental;
+    });
+  }
 
-    async getAll(): Promise<Rental[]> {
-        try {
-            const response = await this.prisma.rental.findMany();
-            
-            return response;
-        } catch (error) {
+  async update(id: string, data: UpdateRentalInput): Promise<Rental> {
+    return this.prisma.rental.update({ where: { id }, data });
+  }
 
-            throw new Error (`${error}`)
-        }
-    }
+  async delete(id: string): Promise<Rental> {
+    return this.prisma.rental.delete({ where: { id } });
+  }
 
-    async create(data: CreateRentalInput): Promise<Rental> {
-        try {
-            const response = await this.prisma.rental.create({
-                data: data
-            });
-            return response;
-        } catch (error) {
-            throw new Error (`${error}`)
-        }
-    }
+  async findVehicle(vehicleId: string): Promise<Vehicle | null> {
+    return this.prisma.vehicle.findUnique({ where: { id: vehicleId } });
+  }
 
-    async update(id: string, data: UpdateRentalInput): Promise<Rental> {
-        try {
-            const response = await this.prisma.rental.update({
-                where: { id },
-                data: data
-            });
-            return response;
-        } catch (error) {
-            throw new Error (`${error}`)
-        }
-    }
+  async findClient(clientId: string): Promise<Client | null> {
+    return this.prisma.client.findUnique({ where: { id: clientId } });
+  }
 
-    async delete(id: string): Promise<Rental> {
-        try {
-            const response = await this.prisma.rental.delete({
-                where: { id }
-            });
-            return response;
-        } catch (error) {
-            throw new Error (`${error}`)
-        }
-    }
+  async hasDateConflict(
+    vehicleId: string,
+    startDate: Date,
+    endDate: Date,
+    excludeRentalId?: string
+  ): Promise<boolean> {
+    const conflict = await this.prisma.rental.findFirst({
+      where: {
+        vehicleId,
+        id: excludeRentalId ? { not: excludeRentalId } : undefined,
+        status: { in: ["Reserved", "Active"] },
+        // Se solapan si: startDate < endDate existente AND endDate > startDate existente
+        AND: [
+          { startDate: { lt: endDate } },
+          { endDate: { gt: startDate } },
+        ],
+      },
+    });
+    return conflict !== null;
+  }
+
+  async returnVehicle(rentalId: string, data: ReturnRentalInput): Promise<Rental> {
+    return this.prisma.$transaction(async (tx) => {
+      const rental = await tx.rental.findUnique({ where: { id: rentalId } });
+
+      if (!rental) throw { status: 404, message: "Rental not found" };
+
+      const subtotal = Number(rental.subtotal);
+      const discount = Number(rental.discount);
+      const extraCharges = data.extraCharges ?? Number(rental.extraCharges);
+      const newTotal = subtotal - discount + extraCharges;
+
+      const updated = await tx.rental.update({
+        where: { id: rentalId },
+        data: {
+          status: "Completed",
+          actualReturn: data.actualReturn ?? new Date(),
+          mileageEnd: data.mileageEnd,
+          fuelIn: data.fuelIn,
+          extraCharges: extraCharges,
+          totalAmount: newTotal,
+          notes: data.notes ?? rental.notes,
+        },
+      });
+
+      await tx.vehicle.update({
+        where: { id: rental.vehicleId },
+        data: { status: "Available" },
+      });
+
+      return updated;
+    });
+  }
 }

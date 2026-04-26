@@ -1,11 +1,27 @@
-import { Rental } from "@prisma/client";
-import type { CreateRentalInput, UpdateRentalInput } from "../../types/rental/rental.types";
+import { Rental, Vehicle, Client } from "@prisma/client";
+import type {
+  CreateRentalInput,
+  UpdateRentalInput,
+  ReturnRentalInput,
+} from "../../types/rental/rental.types";
 
 export interface RentalRepositoryInterface {
+  getById(id: string): Promise<Rental | null>;
+  getAll(tenantId: string): Promise<Rental[]>;
+  create(data: CreateRentalInput): Promise<Rental>;
+  update(id: string, data: UpdateRentalInput): Promise<Rental>;
+  delete(id: string): Promise<Rental>;
 
-    getById(id: string): Promise<Rental | null>
-    getAll(): Promise<Rental[]>
-    create(data: CreateRentalInput): Promise<Rental>
-    update(id: string, data: UpdateRentalInput): Promise<Rental>
-    delete(id: string): Promise<Rental>
+  // Helpers para validaciones de negocio
+  findVehicle(vehicleId: string): Promise<Vehicle | null>;
+  findClient(clientId: string): Promise<Client | null>;
+  hasDateConflict(
+    vehicleId: string,
+    startDate: Date,
+    endDate: Date,
+    excludeRentalId?: string
+  ): Promise<boolean>;
+
+  // Devolucion del vehiculo (transaccion: rental Completed + vehicle Available)
+  returnVehicle(rentalId: string, data: ReturnRentalInput): Promise<Rental>;
 }
