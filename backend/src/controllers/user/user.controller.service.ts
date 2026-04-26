@@ -43,8 +43,9 @@ export class UserControllerService {
   }
 
   async getAll(req: Request, res: Response) {
+    const tenantId = req.user!.tenantId;
     try {
-      const response = await this.repository.getAll();
+      const response = await this.repository.getAll(tenantId);
 
       //solo para mostrar campos especificos visualmente, (de la base de datos siempre trae todo)
       const cleanData = response.map((user) => ({

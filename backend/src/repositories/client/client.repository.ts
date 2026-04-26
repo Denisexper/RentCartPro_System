@@ -23,13 +23,13 @@ export class ClientRepository implements ClientRepositoryInterface {
             throw new Error (`${error}`)
         }
     }
-    async getAll(): Promise<Client[]> {
+    async getAll(tenantId: string): Promise<Client[]> {
         try {
-            
-            const response = await this.prisma.client.findMany()
-
+            const response = await this.prisma.client.findMany({
+                where: { tenantId },
+                orderBy: { createdAt: "desc" },
+            })
             return response
-
         } catch (error) {
             throw new Error (`${error}`)
         }

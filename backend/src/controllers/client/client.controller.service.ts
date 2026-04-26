@@ -31,8 +31,9 @@ export class ClienteControllerService {
     }
   }
   async getAll(req: Request, res: Response) {
+    const tenantId = req.query.tenantId as string;
     try {
-      const response = await this.repository.getAll();
+      const response = await this.repository.getAll(tenantId);
 
       if (response.length === 0) {
         return res.status(200).json({

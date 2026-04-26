@@ -37,8 +37,9 @@ export class PaymentControllerService {
   }
 
   async getAll(req: Request, res: Response) {
+    const tenantId = req.query.tenantId as string;
     try {
-      const response = await this.repository.getAll();
+      const response = await this.repository.getAll(tenantId);
 
       return res.status(200).json({
         msj:

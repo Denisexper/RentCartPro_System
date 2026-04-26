@@ -27,16 +27,15 @@ export class PaymentRepository implements PaymentRepositoryInterface {
             throw new Error(`${error}`)
         }
     }
-    async getAll(): Promise<Payment[]> {
-
+    async getAll(tenantId: string): Promise<Payment[]> {
         try {
-            
-            const response = await this.prisma.payment.findMany()
-
+            const response = await this.prisma.payment.findMany({
+                where: { rental: { tenantId } },
+                include: { rental: true },
+                orderBy: { createdAt: "desc" },
+            })
             return response
-
         } catch (error) {
-            
             throw new Error(`${error}`)
         }
     }
