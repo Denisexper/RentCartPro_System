@@ -77,6 +77,32 @@ export class RentalRepository implements RentalRepositoryInterface {
     return conflict !== null;
   }
 
+  async cancelRental(rentalId: string, notes?: string): Promise<Rental> {
+    return this.prisma.$transaction(async (tx) => {
+      const rental = await tx.rental.findUnique({ where: { id: rentalId } });
+
+      if (!rental) throw { status: 404, message: "Rental not found" };
+
+      const cancelled = await tx.rental.update({
+        where: { id: rentalId },
+        data: {
+          status: "Cancelled",
+          notes: notes ?? rental.notes,
+        },
+      });
+
+      // Solo liberar el vehiculo si estaba activo o reservado
+      if (rental.status === "Active" || rental.status === "Reserved") {
+        await tx.vehicle.update({
+          where: { id: rental.vehicleId },
+          data: { status: "Available" },
+        });
+      }
+
+      return cancelled;
+    });
+  }
+
   async returnVehicle(rentalId: string, data: ReturnRentalInput): Promise<Rental> {
     return this.prisma.$transaction(async (tx) => {
       const rental = await tx.rental.findUnique({ where: { id: rentalId } });

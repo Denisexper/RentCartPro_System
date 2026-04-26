@@ -24,4 +24,7 @@ export interface RentalRepositoryInterface {
 
   // Devolucion del vehiculo (transaccion: rental Completed + vehicle Available)
   returnVehicle(rentalId: string, data: ReturnRentalInput): Promise<Rental>;
+
+  // Cancelacion del alquiler (transaccion: rental Cancelled + vehicle Available)
+  cancelRental(rentalId: string, notes?: string): Promise<Rental>;
 }

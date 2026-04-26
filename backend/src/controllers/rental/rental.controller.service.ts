@@ -125,7 +125,7 @@ export class RentalControllerService {
         return res.status(400).json({ msj: `Cannot update a rental with status: ${rentalExist.status}` });
       }
 
-      // Si se esta marcando como Completed usar el flujo de devolucion
+      // Flujo de devolucion
       if (data.status === "Completed") {
         const returnData: ReturnRentalInput = {
           actualReturn: data.actualReturn ? new Date(data.actualReturn as any) : undefined,
@@ -136,6 +136,12 @@ export class RentalControllerService {
         };
         const completed = await this.repository.returnVehicle(id, returnData);
         return res.status(200).json({ msj: "Rental completed and vehicle returned successfully", data: completed });
+      }
+
+      // Flujo de cancelacion
+      if (data.status === "Cancelled") {
+        const cancelled = await this.repository.cancelRental(id, data.notes ?? undefined);
+        return res.status(200).json({ msj: "Rental cancelled and vehicle released successfully", data: cancelled });
       }
 
       const updated = await this.repository.update(id, data);
