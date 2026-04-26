@@ -1,37 +1,35 @@
-import prisma from "../../dataBase/prisma";
 import { Request, Response, NextFunction } from "express";
 import { LoginInput, RegisterInput } from "../../types/auth/auth.type";
 import { EncryptService } from "../../services/encrypt.service";
+import { generateToken } from "../../utils/generateToken";
+import { AuthRepository } from "../../repositories/auth/auth.repository";
 
 
 export class AuthControllerService {
+    private authRepo: AuthRepository;
 
-    async register (req: Request<{}, {}, RegisterInput>, res: Response, next: NextFunction){
+    constructor(authRepo: AuthRepository) {
+        this.authRepo = authRepo;
+    }
 
-        const {name, email, password, tenantId} = req.body;
+    async register(req: Request<{}, {}, RegisterInput>, res: Response, next: NextFunction) {
+        const { name, email, password, tenantId } = req.body;
 
         try {
-            
-            const userExist = await prisma.user.findUnique({
-                where: {email: email},
-            });
+            const userExist = await this.authRepo.findByEmail(email);
 
-            if(userExist){
-                return next({status: 400, message: "Email already exist"})
+            if (userExist) {
+                return next({ status: 400, message: "Email already exist" });
             }
 
-            //hashear new password
-            const hassPass = await EncryptService.hashPassword(password);
+            const hashedPass = await EncryptService.hashPassword(password);
 
-            //crear usuario nuevo
-            const newUser = await prisma.user.create({
-                data: {
-                    name: name,
-                    email: email,
-                    password: hassPass,
-                    tenantId: tenantId,
-                }
-            })
+            const newUser = await this.authRepo.register({
+                name,
+                email,
+                password: hashedPass,
+                tenantId,
+            });
 
             return res.status(201).json({
                 msj: "User created Successfully",
@@ -39,51 +37,50 @@ export class AuthControllerService {
                     name: newUser.name,
                     email: newUser.email,
                     tenantId: newUser.tenantId,
-                    Role: newUser.role
-                }
-            })
+                    role: newUser.role,
+                },
+            });
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 
-
-
-    async login (req: Request<{}, {}, LoginInput>, res: Response, next: NextFunction){
-
-        const {email, password} = req.body;
+    async login(req: Request<{}, {}, LoginInput>, res: Response, next: NextFunction) {
+        const { email, password } = req.body;
 
         try {
-            
-            // buscar el usuario por el email
-            const userExist = await prisma.user.findUnique({
-                where: {email: email},
-            });
+            const userExist = await this.authRepo.findByEmail(email);
 
-            if(!userExist){
-                return next({status: 401, message: "Credenciales incorrectas"})
+            if (!userExist) {
+                return next({ status: 401, message: "Credenciales incorrectas" });
             }
 
             const isPasswordValid = await EncryptService.comparePassword(password, userExist.password);
 
-            if(!isPasswordValid){
-                return next({status: 401, message: "Credenciales incorrectas"})
+            if (!isPasswordValid) {
+                return next({ status: 401, message: "Credenciales incorrectas" });
             }
+
+            const token = generateToken({
+                id: userExist.id,
+                tenantId: userExist.tenantId,
+                role: userExist.role,
+                email: userExist.email,
+            });
 
             return res.status(200).json({
                 msj: "Bienvenido al sistema",
+                token,
                 data: {
                     id: userExist.id,
                     name: userExist.name,
                     email: userExist.email,
                     tenantId: userExist.tenantId,
-                    role: userExist.role
-                    
-                }
-            })
+                    role: userExist.role,
+                },
+            });
         } catch (error) {
-            next(error)
+            next(error);
         }
-
     }
 }

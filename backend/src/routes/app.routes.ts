@@ -35,7 +35,7 @@ import { VehicleRoutes } from "./vehicle/vehicle.routes";
 //importaciones modulo auth
 import { AuthRepository } from "../repositories/auth/auth.repository";
 import { AuthControllerService } from "../controllers/auth/auth.controller.service";
-import { AuthRoutes, AuthRoutes } from "./auth/auth.routes";
+import { AuthRoutes } from "./auth/auth.routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -73,10 +73,11 @@ export class AppRoutes {
 
     // --- configuracion Modulo Auth ---
     const authRepo = new AuthRepository(prisma)
-    // const authCtrl = new AuthControllerService(authRepo)
-    //const authRoutes = new AuthRoutes(Router(), authCtrl)
+    const authCtrl = new AuthControllerService(authRepo)
+    const authRoutes = new AuthRoutes(Router(), authCtrl)
 
     // --- Definición de Prefijos de Ruta ---
+    router.use("/auth", authRoutes.initRoutes());
     router.use("/clients", clientRoutes.initRoutes());
     router.use("/payments", paymentRoutes.initRoutes());
     router.use("/rentals", rentalRoutes.initRoutes());
