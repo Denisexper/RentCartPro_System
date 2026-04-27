@@ -6,7 +6,7 @@ export const validate = (schema: ZodSchema) => (req: Request, res: Response, nex
   if (!result.success) {
     return res.status(400).json({
       msj: "Validation error",
-      errors: result.error.errors.map((e) => ({
+      errors: result.error.issues.map((e) => ({
         field: e.path.join("."),
         message: e.message,
       })),

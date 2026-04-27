@@ -6,14 +6,14 @@ export const createVehicleSchema = z.object({
   brand: z.string().min(1, "Brand is required"),
   model: z.string().min(1, "Model is required"),
   year: z
-    .number({ invalid_type_error: "Year must be a number" })
+    .number({ error: "Year must be a number" })
     .int()
     .min(1900, "Year must be 1900 or later")
     .max(new Date().getFullYear() + 2, "Year is too far in the future"),
   category: z.enum(["Economy", "Compact", "Sedan", "SUV", "Pickup", "Van", "Luxury"]),
   color: z.string().min(1, "Color is required"),
   dailyRate: z
-    .number({ invalid_type_error: "dailyRate must be a number" })
+    .number({ error: "dailyRate must be a number" })
     .positive("Daily rate must be greater than 0"),
   mileage: z.number().int().min(0).optional(),
   fuelType: z.enum(["Gasoline", "Diesel", "Electric", "Hybrid"]).optional(),

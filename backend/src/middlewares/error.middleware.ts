@@ -16,15 +16,15 @@ export const ErrorMiddleware = (
   //errores de prisma
   //P2025: Registro no encontrado(para: update, delete, get)
   if (err.code === "P2025") {
-    err.code = 404;
+    status = 404;
     message = "Register not found";
   }
 
   //errores de prisma
   //intento de duplicidad de campo unico
   if (err.code === "P2002") {
-    err.code = 400;
-    err.message = "Resource already exist";
+    status = 400;
+    message = "Resource already exist";
   }
 
   //errores de jwt
