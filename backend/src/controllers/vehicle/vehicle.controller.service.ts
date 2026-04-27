@@ -35,6 +35,13 @@ export class VehicleControllerService {
           year: response.year,
           category: response.category,
           color: response.color,
+          dailyRate: Number(response.dailyRate),
+          status: response.status,
+          fuelType: response.fuelType,
+          transmission: response.transmission,
+          seats: response.seats,
+          mileage: response.mileage,
+          notes: response.notes ?? "",
         },
       });
     } catch (error: any) {
@@ -70,6 +77,11 @@ export class VehicleControllerService {
         color: vehicle.color,
         dailyRate: Number(vehicle.dailyRate),
         status: vehicle.status,
+        fuelType: vehicle.fuelType,
+        transmission: vehicle.transmission,
+        seats: vehicle.seats,
+        mileage: vehicle.mileage,
+        notes: vehicle.notes ?? "",
       }));
 
       return res.status(200).json({

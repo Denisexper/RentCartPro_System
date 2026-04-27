@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
 import { useVehicles } from "../hooks/useVehicles";
 import { VehicleStatusBadge } from "../components/vehicles/VehicleStatusBadge";
 import { VehicleFormModal } from "../components/vehicles/VehicleFormModal";
+import { VehicleEditModal } from "../components/vehicles/VehicleEditModal";
+import { Button } from "../components/ui/button";
 
-const COLUMNS = ["Placa", "Marca", "Modelo", "Año", "Categoría", "Tarifa/día", "Estado"];
+const COLUMNS = ["Placa", "Marca", "Modelo", "Año", "Categoría", "Tarifa/día", "Estado", ""];
 
 function TableSkeleton() {
   return Array.from({ length: 5 }).map((_, i) => (
@@ -20,6 +23,7 @@ function TableSkeleton() {
 export default function VehiclesPage() {
   const { vehicles, loading, error, refetch } = useVehicles();
   const [search, setSearch] = useState("");
+  const [editVehicle, setEditVehicle] = useState(null);
 
   const filtered = vehicles.filter((v) => {
     const q = search.toLowerCase();
@@ -96,11 +100,19 @@ export default function VehiclesPage() {
                   <td className="px-4 py-3">{v.model}</td>
                   <td className="px-4 py-3">{v.year}</td>
                   <td className="px-4 py-3">{v.category}</td>
-                  <td className="px-4 py-3">
-                    ${Number(v.dailyRate).toFixed(2)}
-                  </td>
+                  <td className="px-4 py-3">${Number(v.dailyRate).toFixed(2)}</td>
                   <td className="px-4 py-3">
                     <VehicleStatusBadge status={v.status} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => setEditVehicle(v)}
+                      title="Editar vehículo"
+                    >
+                      <Pencil />
+                    </Button>
                   </td>
                 </tr>
               ))
@@ -115,6 +127,13 @@ export default function VehiclesPage() {
           {search ? ` encontrado${filtered.length !== 1 ? "s" : ""}` : " en total"}
         </p>
       )}
+
+      <VehicleEditModal
+        vehicle={editVehicle}
+        open={!!editVehicle}
+        onOpenChange={(val) => { if (!val) setEditVehicle(null); }}
+        onSuccess={() => { setEditVehicle(null); refetch(); }}
+      />
     </div>
   );
 }
