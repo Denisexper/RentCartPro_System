@@ -1,3 +1,147 @@
+import { useState } from "react";
+import { useClients } from "../hooks/useClients";
+
+const COLUMNS = ["Nombre", "Teléfono", "Documento", "Licencia", "Blacklisted"];
+
+const ID_LABELS = { DUI: "DUI", Passport: "Pasaporte", NIT: "NIT", Other: "Otro" };
+
+function BlacklistedBadge({ value }) {
+  if (value) {
+    return (
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+        Bloqueado
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+      Activo
+    </span>
+  );
+}
+
+function TableSkeleton() {
+  return Array.from({ length: 5 }).map((_, i) => (
+    <tr key={i} className="border-b border-border">
+      {COLUMNS.map((col) => (
+        <td key={col} className="px-4 py-3">
+          <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+        </td>
+      ))}
+    </tr>
+  ));
+}
+
 export default function CustomersPage() {
-  return <p className="text-muted-foreground">Clientes — próximamente</p>;
+  const { clients, loading, error, refetch } = useClients();
+  const [search, setSearch] = useState("");
+
+  const filtered = clients.filter((c) => {
+    const q = search.toLowerCase();
+    const fullName = `${c.firstName} ${c.lastName}`.toLowerCase();
+    return (
+      fullName.includes(q) ||
+      c.idNumber?.toLowerCase().includes(q) ||
+      c.phone?.toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Clientes</h1>
+          <p className="text-sm text-muted-foreground">Gestión de clientes del rentcar</p>
+        </div>
+        <button
+          disabled
+          className="h-8 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground opacity-50 cursor-not-allowed"
+        >
+          + Nuevo Cliente
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="Buscar por nombre, documento o teléfono..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-8 w-80 rounded-lg border border-border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Limpiar
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <span>{error}</span>
+          <button onClick={refetch} className="underline text-xs">Reintentar</button>
+        </div>
+      )}
+
+      <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50">
+            <tr>
+              {COLUMNS.map((col) => (
+                <th
+                  key={col}
+                  className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-card divide-y divide-border">
+            {loading ? (
+              <TableSkeleton />
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={COLUMNS.length} className="px-4 py-8 text-center text-muted-foreground">
+                  {search ? "Sin resultados para esa búsqueda." : "No hay clientes registrados."}
+                </td>
+              </tr>
+            ) : (
+              filtered.map((c) => (
+                <tr key={c.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="px-4 py-3 font-medium">
+                    {c.firstName} {c.lastName}
+                    {c.email && (
+                      <p className="text-xs text-muted-foreground font-normal">{c.email}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 font-mono">{c.phone}</td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs text-muted-foreground">{ID_LABELS[c.idType] ?? c.idType}</span>
+                    <p className="font-mono">{c.idNumber}</p>
+                  </td>
+                  <td className="px-4 py-3 font-mono">
+                    {c.licenseNum ?? <span className="text-muted-foreground text-xs">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <BlacklistedBadge value={c.blacklisted} />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {!loading && !error && filtered.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {filtered.length} cliente{filtered.length !== 1 ? "s" : ""}
+          {search ? ` encontrado${filtered.length !== 1 ? "s" : ""}` : " en total"}
+        </p>
+      )}
+    </div>
+  );
 }
