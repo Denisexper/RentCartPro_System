@@ -68,6 +68,8 @@ export class VehicleControllerService {
         year: vehicle.year,
         category: vehicle.category,
         color: vehicle.color,
+        dailyRate: Number(vehicle.dailyRate),
+        status: vehicle.status,
       }));
 
       return res.status(200).json({
