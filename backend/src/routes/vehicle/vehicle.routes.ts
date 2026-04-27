@@ -3,6 +3,8 @@ import { VehicleControllerService } from "../../controllers/vehicle/vehicle.cont
 import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { validate } from "../../middlewares/validate.middleware";
+import { createVehicleSchema, updateVehicleSchema } from "../../schemas/vehicle.schema";
 
 export class VehicleRoutes {
   private router: Router;
@@ -33,6 +35,7 @@ export class VehicleRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin"),
+      validate(createVehicleSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
     this.router.put(
@@ -40,6 +43,7 @@ export class VehicleRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin"),
+      validate(updateVehicleSchema),
       (req: Request<{ id: string }, {}, {}, { tenantId: string }>, res: Response) => this.controller.update(req, res)
     );
     this.router.delete(

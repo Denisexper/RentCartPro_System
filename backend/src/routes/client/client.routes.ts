@@ -3,6 +3,8 @@ import { ClienteControllerService } from "../../controllers/client/client.contro
 import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { validate } from "../../middlewares/validate.middleware";
+import { createClientSchema, updateClientSchema } from "../../schemas/client.schema";
 
 export class ClientRoutes {
   private router: Router;
@@ -33,6 +35,7 @@ export class ClientRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      validate(createClientSchema),
       (req: Request, res: Response) => this.ClientController.create(req, res)
     );
     this.router.put(
@@ -40,6 +43,7 @@ export class ClientRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      validate(updateClientSchema),
       (req: Request<{ id: string }>, res: Response) => this.ClientController.update(req, res)
     );
     this.router.delete(

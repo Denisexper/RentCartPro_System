@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { UserControllerService } from "../../controllers/user/user.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { authorizeRoles } from "../../middlewares/role.moddleware";
+import { validate } from "../../middlewares/validate.middleware";
+import { createUserSchema, updateUserSchema } from "../../schemas/user.schema";
 
 export class UserRoutes {
   private router: Router;
@@ -29,12 +31,14 @@ export class UserRoutes {
       "/",
       authMiddleware,
       authorizeRoles("SuperAdmin", "Admin"),
+      validate(createUserSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
     this.router.put(
       "/:id",
       authMiddleware,
       authorizeRoles("SuperAdmin", "Admin"),
+      validate(updateUserSchema),
       (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
     this.router.delete(

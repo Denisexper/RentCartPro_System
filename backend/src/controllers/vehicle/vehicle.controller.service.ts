@@ -97,46 +97,6 @@ export class VehicleControllerService {
   async create(req: Request, res: Response) {
     const data: CreateVehicleInput = req.body;
 
-    if (
-      !data.tenantId ||
-      !data.plate ||
-      !data.brand ||
-      !data.model ||
-      data.year === undefined ||
-      !data.category ||
-      !data.category ||
-      data.dailyRate === undefined
-    ) {
-      return res.status(400).json({
-        msj: "Missing requireds fields",
-        fields: {
-          tenantId: !data.tenantId ? "Required" : "OK",
-          plate: !data.plate ? "Required" : "OK",
-          brand: !data.brand ? "Required" : "OK",
-          model: !data.model ? "Required" : "OK",
-          year: data.year === undefined ? "Required" : "OK",
-          category: !data.category ? "Required" : "OK",
-          dailyRate: data.dailyRate === undefined ? "Required" : "OK",
-        },
-      });
-    }
-
-    // Validamos la lógica de los valores (Negocio)
-    //convertimos dailyRate a number porque es decimal y un decimal no podemos copararlo con un entero
-    if (Number(data.dailyRate) <= 0) {
-      return res.status(400).json({
-        msj: "Invalid daily rate",
-        error: "The rate must be greater than 0",
-      });
-    }
-
-    if (data.year < 1900 || data.year > 2027) {
-      return res.status(400).json({
-        msj: "Invalid year",
-        error: "Year must be between 1900 and 2027",
-      });
-    }
-
     try {
       const response = await this.repository.create(data);
 
@@ -179,34 +139,6 @@ export class VehicleControllerService {
     const { tenantId } = req.query;
 
     const data: UpdateVehicleInput = req.body;
-
-    // Validar que el body no esté vacío
-    if (!data || Object.keys(data).length === 0) {
-      return res.status(400).json({ msj: "No data provided for update" });
-    }
-
-    //Validar espacios en blanco
-    const values = Object.values(data);
-    const hasContent = values.some(
-      (val) =>
-        val !== null && val !== undefined && val.toString().trim() !== "",
-    );
-
-    if (!hasContent) {
-      return res.status(400).json({ msj: "Provided fields cannot be empty" });
-    }
-
-    // Validamos el precio SOLO si viene en la petición
-    if (data.dailyRate !== undefined && Number(data.dailyRate) <= 0) {
-      return res.status(400).json({ msj: "Daily rate must be greater than 0" });
-    }
-
-    // Validamos el año SOLO si viene en la petición
-    if (data.year !== undefined && (data.year < 1900 || data.year > 2027)) {
-      return res
-        .status(400)
-        .json({ msj: "Year must be between 1900 and 2027" });
-    }
 
     try {
       const response = await this.repository.update(id, data);

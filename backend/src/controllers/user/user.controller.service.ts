@@ -78,26 +78,6 @@ export class UserControllerService {
   async create(req: Request, res: Response) {
     const data: CreateUserInput = req.body;
 
-    if (
-      !data.tenantId ||
-      !data.name ||
-      !data.email ||
-      !data.password ||
-      !data.role ||
-      !data.active
-    ) {
-      return res.status(400).json({
-        mjs: "Missing requireds fields",
-        fields: {
-          tenantId: !data.tenantId ? "Required" : "OK",
-          name: !data.name ? "Required" : "OK",
-          email: !data.email ? "Required" : "OK",
-          password: !data.password ? "Required" : "OK",
-          role: !data.role ? "Required" : "OK",
-          active: !data.active ? "Required" : "OK",
-        },
-      });
-    }
     try {
       const salt = await bcrypt.genSalt(10);
       const hasPassword = await bcrypt.hash(data.password, salt);
@@ -138,22 +118,6 @@ export class UserControllerService {
   async update(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
     const data: UpdateUserInput = req.body;
-
-    // Validar que el body no esté vacío
-    if (!data || Object.keys(data).length === 0) {
-      return res.status(400).json({ msj: "No data provided for update" });
-    }
-
-    //Validar espacios en blanco
-    const values = Object.values(data);
-    const hasContent = values.some(
-      (val) =>
-        val !== null && val !== undefined && val.toString().trim() !== "",
-    );
-
-    if (!hasContent) {
-      return res.status(400).json({ msj: "Provided fields cannot be empty" });
-    }
 
     try {
       // Verificar si el usuario existe

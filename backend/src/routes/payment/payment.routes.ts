@@ -3,6 +3,8 @@ import { PaymentControllerService } from "../../controllers/payment/payment.cont
 import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { validate } from "../../middlewares/validate.middleware";
+import { createPaymentSchema, updatePaymentSchema } from "../../schemas/payment.schema";
 
 export class PaymentRoutes {
   private router: Router;
@@ -33,6 +35,7 @@ export class PaymentRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      validate(createPaymentSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
     this.router.put(
@@ -40,6 +43,7 @@ export class PaymentRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      validate(updatePaymentSchema),
       (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
     this.router.delete(

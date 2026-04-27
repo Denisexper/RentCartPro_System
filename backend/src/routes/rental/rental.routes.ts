@@ -3,6 +3,8 @@ import { RentalControllerService } from "../../controllers/rental/rental.control
 import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { validate } from "../../middlewares/validate.middleware";
+import { createRentalSchema, updateRentalSchema } from "../../schemas/rental.schema";
 
 export class RentalRoutes {
   private router: Router;
@@ -33,6 +35,7 @@ export class RentalRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      validate(createRentalSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
     this.router.put(
@@ -40,6 +43,7 @@ export class RentalRoutes {
       authMiddleware,
       tenantMiddleware,
       authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      validate(updateRentalSchema),
       (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
     this.router.delete(

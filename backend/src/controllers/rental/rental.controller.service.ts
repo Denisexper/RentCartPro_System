@@ -33,20 +33,8 @@ export class RentalControllerService {
     const body: CreateRentalBody = req.body;
     const { vehicleId, clientId, startDate, endDate } = body;
 
-    if (!vehicleId || !clientId || !startDate || !endDate) {
-      return res.status(400).json({ msj: "Fields required: vehicleId, clientId, startDate, endDate" });
-    }
-
     const start = new Date(startDate);
     const end = new Date(endDate);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return res.status(400).json({ msj: "Invalid date format" });
-    }
-
-    if (end <= start) {
-      return res.status(400).json({ msj: "endDate must be after startDate" });
-    }
 
     try {
       // 1. Verificar que el vehiculo existe y esta disponible

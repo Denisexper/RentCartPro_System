@@ -59,24 +59,6 @@ export class ClienteControllerService {
   async create(req: Request, res: Response) {
     const data: CreateClientInput = req.body;
 
-    if (
-      !data.firstName ||
-      !data.tenantId ||
-      !data.lastName ||
-      !data.phone ||
-      !data.idNumber
-    ) {
-      return res.status(400).json({
-        msj: "Faltan campos obligatorios",
-        fields: {
-          firstName: !data.firstName ? "Required" : "OK",
-          tenantId: !data.tenantId ? "Required" : "OK",
-          lastName: !data.lastName ? "Required" : "OK",
-          phone: !data.phone ? "Required" : "OK",
-          idNumber: !data.idNumber ? "Required" : "OK",
-        },
-      });
-    }
     try {
       const response = await this.repository.create(data);
 
@@ -103,10 +85,6 @@ export class ClienteControllerService {
     const { id } = req.params;
 
     const data: UpdateClientInput = req.body;
-
-    if (!data || Object.keys(data).length === 0) {
-      return res.status(400).json({ msj: "No data provided for update" });
-    }
 
     try {
       const response = await this.repository.update(id, data);

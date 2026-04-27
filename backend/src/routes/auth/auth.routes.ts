@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { AuthControllerService } from "../../controllers/auth/auth.controller.service";
 import { LoginInput, RegisterInput } from "../../types/auth/auth.type";
+import { validate } from "../../middlewares/validate.middleware";
+import { loginSchema, registerSchema } from "../../schemas/auth.schema";
 
 export class AuthRoutes {
     private router: Router;
@@ -15,9 +17,8 @@ export class AuthRoutes {
     }
 
     initRoutes () {
-        this.router.post("/login", (req: Request<{}, {}, LoginInput>, res: Response, next: NextFunction) => this.controller.login(req, res, next));
-        this.router.post("/register", (req: Request<{}, {}, RegisterInput>, res: Response, next: NextFunction) => this.controller.register(req, res, next));
-
+        this.router.post("/login", validate(loginSchema), (req: Request<{}, {}, LoginInput>, res: Response, next: NextFunction) => this.controller.login(req, res, next));
+        this.router.post("/register", validate(registerSchema), (req: Request<{}, {}, RegisterInput>, res: Response, next: NextFunction) => this.controller.register(req, res, next));
 
         return this.router;
     }

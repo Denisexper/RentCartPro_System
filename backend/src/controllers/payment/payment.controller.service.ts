@@ -60,16 +60,6 @@ export class PaymentControllerService {
   async create(req: Request, res: Response) {
     const data: CreatePaymentInput = req.body;
 
-    if (!data.rentalId || !data.amount || !data.method) {
-      return res.status(400).json({
-        msj: "Missing required fields ",
-        fields: {
-          rentalId: !data.rentalId ? "Required" : "OK",
-          amount: !data.amount ? "Required" : "OK",
-          method: !data.method ? "Required" : "OK",
-        },
-      });
-    }
     try {
       const response = await this.repository.create(data);
 
