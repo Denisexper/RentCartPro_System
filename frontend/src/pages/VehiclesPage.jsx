@@ -1,10 +1,21 @@
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useVehicles } from "../hooks/useVehicles";
 import { VehicleStatusBadge } from "../components/vehicles/VehicleStatusBadge";
 import { VehicleFormModal } from "../components/vehicles/VehicleFormModal";
 import { VehicleEditModal } from "../components/vehicles/VehicleEditModal";
 import { Button } from "../components/ui/button";
+import {
+  AlertDialogRoot,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../components/ui/alert-dialog";
+import { vehicleService } from "../services/vehicle.service";
 
 const COLUMNS = ["Placa", "Marca", "Modelo", "Año", "Categoría", "Tarifa/día", "Estado", ""];
 
@@ -24,6 +35,17 @@ export default function VehiclesPage() {
   const { vehicles, loading, error, refetch } = useVehicles();
   const [search, setSearch] = useState("");
   const [editVehicle, setEditVehicle] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+
+  async function handleDelete(id) {
+    setDeleting(id);
+    try {
+      await vehicleService.remove(id);
+      refetch();
+    } finally {
+      setDeleting(null);
+    }
+  }
 
   const filtered = vehicles.filter((v) => {
     const q = search.toLowerCase();
@@ -104,15 +126,53 @@ export default function VehiclesPage() {
                   <td className="px-4 py-3">
                     <VehicleStatusBadge status={v.status} />
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setEditVehicle(v)}
-                      title="Editar vehículo"
-                    >
-                      <Pencil />
-                    </Button>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setEditVehicle(v)}
+                        title="Editar vehículo"
+                      >
+                        <Pencil />
+                      </Button>
+
+                      <AlertDialogRoot>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Eliminar vehículo"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogTitle>¿Eliminar vehículo?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción eliminará permanentemente el vehículo{" "}
+                            <span className="font-mono font-medium text-foreground">{v.plate}</span>{" "}
+                            ({v.brand} {v.model}). No se puede deshacer.
+                          </AlertDialogDescription>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel asChild>
+                              <Button variant="outline">Cancelar</Button>
+                            </AlertDialogCancel>
+                            <AlertDialogAction asChild>
+                              <Button
+                                variant="destructive"
+                                disabled={deleting === v.id}
+                                onClick={() => handleDelete(v.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                {deleting === v.id ? "Eliminando..." : "Sí, eliminar"}
+                              </Button>
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialogRoot>
+                    </div>
                   </td>
                 </tr>
               ))
