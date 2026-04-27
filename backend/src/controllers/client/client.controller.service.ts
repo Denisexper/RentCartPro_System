@@ -57,7 +57,8 @@ export class ClienteControllerService {
   }
 
   async create(req: Request, res: Response) {
-    const data: CreateClientInput = req.body;
+    const tenantId = req.user!.tenantId;
+    const data: CreateClientInput = { ...req.body, tenantId };
 
     try {
       const response = await this.repository.create(data);

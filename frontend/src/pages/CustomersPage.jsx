@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useClients } from "../hooks/useClients";
+import { CustomerFormModal } from "../components/customers/CustomerFormModal";
 
 const COLUMNS = ["Nombre", "Teléfono", "Documento", "Licencia", "Blacklisted"];
 
@@ -53,12 +54,7 @@ export default function CustomersPage() {
           <h1 className="text-xl font-semibold">Clientes</h1>
           <p className="text-sm text-muted-foreground">Gestión de clientes del rentcar</p>
         </div>
-        <button
-          disabled
-          className="h-8 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground opacity-50 cursor-not-allowed"
-        >
-          + Nuevo Cliente
-        </button>
+        <CustomerFormModal onSuccess={refetch} />
       </div>
 
       <div className="flex items-center gap-2">
