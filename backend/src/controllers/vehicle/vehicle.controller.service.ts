@@ -54,14 +54,8 @@ export class VehicleControllerService {
     }
   }
 
-  async getAll(req: Request<{}, {}, {}, { tenantId: string }>, res: Response) {
-    const { tenantId } = req.query;
-
-    if (!tenantId) {
-      return res.status(400).json({
-        msj: "tenantId is required to fetch vehicles",
-      });
-    }
+  async getAll(req: Request, res: Response) {
+    const tenantId = req.user!.tenantId;
 
     try {
       const response = await this.repository.getAll(tenantId);

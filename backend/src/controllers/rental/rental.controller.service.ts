@@ -17,7 +17,7 @@ export class RentalControllerService {
   }
 
   async getAll(req: Request, res: Response) {
-    const tenantId = req.query.tenantId as string;
+    const tenantId = req.user!.tenantId;
     try {
       const rentals = await this.repository.getAll(tenantId);
       return res.status(200).json({

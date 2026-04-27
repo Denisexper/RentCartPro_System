@@ -26,7 +26,7 @@ async function main() {
   const superAdminPassword = await bcrypt.hash("superadmin123", 10);
   const superAdmin = await prisma.user.upsert({
     where: { email: "superadmin@rentcarpro.com" },
-    update: {},
+    update: { tenantId: tenant.id, role: "SuperAdmin", active: true },
     create: {
       tenantId: tenant.id,
       name: "Super Admin",
@@ -42,7 +42,7 @@ async function main() {
   const adminPassword = await bcrypt.hash("admin123", 10);
   const admin = await prisma.user.upsert({
     where: { email: "admin@demo-rentcar.com" },
-    update: {},
+    update: { tenantId: tenant.id, role: "Admin", active: true },
     create: {
       tenantId: tenant.id,
       name: "Admin Demo",
@@ -58,7 +58,7 @@ async function main() {
   const operatorPassword = await bcrypt.hash("operator123", 10);
   const operator = await prisma.user.upsert({
     where: { email: "operador@demo-rentcar.com" },
-    update: {},
+    update: { tenantId: tenant.id, role: "Operator", active: true },
     create: {
       tenantId: tenant.id,
       name: "Operador Demo",
