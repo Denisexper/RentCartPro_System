@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Button } from "../components/ui/button";
 import { useVehicles } from "../hooks/useVehicles";
 import { VehicleStatusBadge } from "../components/vehicles/VehicleStatusBadge";
+import { VehicleFormModal } from "../components/vehicles/VehicleFormModal";
 
 const COLUMNS = ["Placa", "Marca", "Modelo", "Año", "Categoría", "Tarifa/día", "Estado"];
 
@@ -37,7 +37,7 @@ export default function VehiclesPage() {
           <h1 className="text-xl font-semibold">Vehículos</h1>
           <p className="text-sm text-muted-foreground">Gestión de la flota</p>
         </div>
-        <Button disabled>+ Nuevo Vehículo</Button>
+        <VehicleFormModal onSuccess={refetch} />
       </div>
 
       <div className="flex items-center gap-2">
