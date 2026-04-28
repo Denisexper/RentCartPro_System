@@ -1,8 +1,20 @@
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { usePayments } from "../hooks/usePayments";
 import { PaymentFormModal } from "../components/payments/PaymentFormModal";
+import {
+  AlertDialogRoot,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../components/ui/alert-dialog";
+import { Button } from "../components/ui/button";
+import { paymentService } from "../services/payment.service";
 
-const COLUMNS = ["Alquiler", "Monto", "Método", "Tipo", "Referencia", "Fecha"];
+const COLUMNS = ["Alquiler", "Monto", "Método", "Tipo", "Referencia", "Fecha", ""];
 
 const METHOD_LABELS = {
   Cash: "Efectivo",
@@ -54,6 +66,20 @@ function TableSkeleton() {
 export default function PaymentsPage() {
   const { payments, loading, error, refetch } = usePayments();
   const [search, setSearch] = useState("");
+  const [deletePayment, setDeletePayment] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  async function confirmDelete() {
+    if (!deletePayment) return;
+    setDeleting(true);
+    try {
+      await paymentService.remove(deletePayment.id);
+      setDeletePayment(null);
+      refetch();
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const filtered = payments.filter((p) => {
     const q = search.toLowerCase();
@@ -145,12 +171,52 @@ export default function PaymentsPage() {
                   <td className="px-4 py-3 font-mono">
                     {formatDate(p.createdAt)}
                   </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => setDeletePayment(p)}
+                      className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      title="Eliminar pago"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      <AlertDialogRoot open={!!deletePayment} onOpenChange={(v) => { if (!v) setDeletePayment(null); }}>
+        <AlertDialogContent>
+          <AlertDialogTitle>¿Eliminar pago?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Estás a punto de eliminar el pago de{" "}
+            <span className="font-mono font-medium text-foreground">
+              ${Number(deletePayment?.amount ?? 0).toFixed(2)}
+            </span>{" "}
+            del alquiler{" "}
+            <span className="font-mono font-medium text-foreground">
+              {deletePayment?.rental?.vehicle?.plate}
+            </span>. Esta acción no se puede deshacer.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={deleting}>Cancelar</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                disabled={deleting}
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Eliminando..." : "Sí, eliminar"}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogRoot>
 
       {!loading && !error && filtered.length > 0 && (
         <p className="text-xs text-muted-foreground">
