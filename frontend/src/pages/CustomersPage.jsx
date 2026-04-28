@@ -1,8 +1,20 @@
 import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useClients } from "../hooks/useClients";
 import { CustomerFormModal } from "../components/customers/CustomerFormModal";
+import { CustomerEditModal } from "../components/customers/CustomerEditModal";
+import {
+  AlertDialogRoot,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
+import { clientService } from "../services/client.service";
 
-const COLUMNS = ["Nombre", "Teléfono", "Documento", "Licencia", "Blacklisted"];
+const COLUMNS = ["Nombre", "Teléfono", "Documento", "Licencia", "Blacklisted", ""];
 
 const ID_LABELS = { DUI: "DUI", Passport: "Pasaporte", NIT: "NIT", Other: "Otro" };
 
@@ -37,6 +49,12 @@ export default function CustomersPage() {
   const { clients, loading, error, refetch } = useClients();
   const [search, setSearch] = useState("");
 
+  const [editClient, setEditClient] = useState(null);
+  const [editOpen, setEditOpen] = useState(false);
+
+  const [deleteClient, setDeleteClient] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   const filtered = clients.filter((c) => {
     const q = search.toLowerCase();
     const fullName = `${c.firstName} ${c.lastName}`.toLowerCase();
@@ -46,6 +64,23 @@ export default function CustomersPage() {
       c.phone?.toLowerCase().includes(q)
     );
   });
+
+  function openEdit(client) {
+    setEditClient(client);
+    setEditOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!deleteClient) return;
+    setDeleting(true);
+    try {
+      await clientService.remove(deleteClient.id);
+      setDeleteClient(null);
+      refetch();
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -125,6 +160,24 @@ export default function CustomersPage() {
                   <td className="px-4 py-3">
                     <BlacklistedBadge value={c.blacklisted} />
                   </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1 justify-end">
+                      <button
+                        onClick={() => openEdit(c)}
+                        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        title="Editar cliente"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteClient(c)}
+                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        title="Eliminar cliente"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
@@ -138,6 +191,36 @@ export default function CustomersPage() {
           {search ? ` encontrado${filtered.length !== 1 ? "s" : ""}` : " en total"}
         </p>
       )}
+
+      <CustomerEditModal
+        client={editClient}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSuccess={refetch}
+      />
+
+      <AlertDialogRoot open={!!deleteClient} onOpenChange={(v) => { if (!v) setDeleteClient(null); }}>
+        <AlertDialogContent>
+          <AlertDialogTitle>¿Eliminar cliente?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Estás a punto de eliminar a{" "}
+            <span className="font-medium">
+              {deleteClient?.firstName} {deleteClient?.lastName}
+            </span>{" "}
+            (Doc: {deleteClient?.idNumber}). Esta acción no se puede deshacer.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Eliminando..." : "Eliminar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogRoot>
     </div>
   );
 }
