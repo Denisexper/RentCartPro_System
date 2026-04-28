@@ -14,6 +14,7 @@ import { Label } from "../ui/label";
 import { rentalService } from "../../services/rental.service";
 import { useVehicles } from "../../hooks/useVehicles";
 import { useClients } from "../../hooks/useClients";
+import { Combobox } from "../ui/combobox";
 
 const FUEL_LEVELS = ["Full", "ThreeQuarters", "Half", "Quarter", "Empty"];
 const FUEL_LABELS = {
@@ -145,10 +146,10 @@ export function RentalFormModal({ onSuccess }) {
           {/* Cliente y Vehículo */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Cliente" required>
-              <NativeSelect
+              <Combobox
                 value={form.clientId}
                 onChange={setDirect("clientId")}
-                placeholder="Selecciona un cliente..."
+                placeholder="Buscar cliente..."
                 options={activeClients.map((c) => ({
                   value: c.id,
                   label: `${c.firstName} ${c.lastName} — ${c.idNumber}`,
@@ -156,10 +157,10 @@ export function RentalFormModal({ onSuccess }) {
               />
             </Field>
             <Field label="Vehículo disponible" required>
-              <NativeSelect
+              <Combobox
                 value={form.vehicleId}
                 onChange={setDirect("vehicleId")}
-                placeholder="Selecciona un vehículo..."
+                placeholder="Buscar vehículo..."
                 options={availableVehicles.map((v) => ({
                   value: v.id,
                   label: `${v.plate} — ${v.brand} ${v.model} ($${Number(v.dailyRate).toFixed(2)}/día)`,
