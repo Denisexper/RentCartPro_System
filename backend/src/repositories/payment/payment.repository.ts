@@ -31,7 +31,7 @@ export class PaymentRepository implements PaymentRepositoryInterface {
         try {
             const response = await this.prisma.payment.findMany({
                 where: { rental: { tenantId } },
-                include: { rental: true },
+                include: { rental: { include: { vehicle: true, client: true } } },
                 orderBy: { createdAt: "desc" },
             })
             return response
