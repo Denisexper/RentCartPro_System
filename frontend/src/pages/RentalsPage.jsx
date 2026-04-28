@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRentals } from "../hooks/useRentals";
+import { RentalFormModal } from "../components/rentals/RentalFormModal";
 
 const COLUMNS = ["Cliente", "Vehículo", "Inicio", "Fin", "Total", "Estado"];
 
@@ -71,6 +72,7 @@ export default function RentalsPage() {
           <h1 className="text-xl font-semibold">Alquileres</h1>
           <p className="text-sm text-muted-foreground">Historial de alquileres del rentcar</p>
         </div>
+        <RentalFormModal onSuccess={refetch} />
       </div>
 
       <div className="flex items-center gap-2">
