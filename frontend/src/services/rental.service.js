@@ -7,4 +7,5 @@ export const rentalService = {
   update: (id, data) => api.put(`/rentals/${id}`, data),
   cancel: (id, notes) => api.patch(`/rentals/${id}/cancel`, { notes }),
   returnVehicle: (id, data) => api.patch(`/rentals/${id}/return`, data),
+  forceDelete: (id) => api.delete(`/rentals/${id}/force`),
 };
