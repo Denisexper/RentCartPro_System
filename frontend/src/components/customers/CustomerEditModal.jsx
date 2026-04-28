@@ -10,6 +10,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 import { clientService } from "../../services/client.service";
 
 const ID_TYPES = ["DUI", "Passport", "NIT", "Other"];
@@ -43,7 +44,6 @@ function NativeSelect({ value, onChange, options, labels }) {
 export function CustomerEditModal({ client, open, onOpenChange, onSuccess }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (client) {
@@ -62,7 +62,6 @@ export function CustomerEditModal({ client, open, onOpenChange, onSuccess }) {
         blacklisted: client.blacklisted ?? false,
         notes: client.notes ?? "",
       });
-      setError(null);
     }
   }, [client]);
 
@@ -77,7 +76,6 @@ export function CustomerEditModal({ client, open, onOpenChange, onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     try {
       await clientService.update(client.id, {
         firstName: form.firstName,
@@ -92,10 +90,11 @@ export function CustomerEditModal({ client, open, onOpenChange, onSuccess }) {
         blacklisted: form.blacklisted,
         notes: form.notes || null,
       });
+      toast.success("Cliente actualizado exitosamente");
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      setError(err.response?.data?.message ?? "Error al actualizar el cliente");
+      toast.error(err.response?.data?.message ?? "Error al actualizar el cliente");
     } finally {
       setLoading(false);
     }
@@ -175,10 +174,6 @@ export function CustomerEditModal({ client, open, onOpenChange, onSuccess }) {
               <span className="text-sm text-destructive font-medium">Marcar en la (blacklisted)</span>
             </label>
           </Field>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

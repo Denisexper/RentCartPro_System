@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { usePermissions } from "../hooks/usePermissions";
 import { useRentals } from "../hooks/useRentals";
 import { RentalFormModal } from "../components/rentals/RentalFormModal";
@@ -99,8 +100,11 @@ export default function RentalsPage() {
     setForceDeleting(true);
     try {
       await rentalService.forceDelete(forceDeleteRental.id);
+      toast.success("Alquiler eliminado");
       setForceDeleteRental(null);
       refetch();
+    } catch {
+      toast.error("No se pudo eliminar el alquiler");
     } finally {
       setForceDeleting(false);
     }
@@ -114,8 +118,11 @@ export default function RentalsPage() {
         status: "Cancelled",
         notes: cancelNotes || null,
       });
+      toast.success("Alquiler cancelado");
       setCancelRental(null);
       refetch();
+    } catch {
+      toast.error("No se pudo cancelar el alquiler");
     } finally {
       setCancelling(false);
     }

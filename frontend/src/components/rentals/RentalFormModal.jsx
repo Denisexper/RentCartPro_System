@@ -11,6 +11,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 import { rentalService } from "../../services/rental.service";
 import { useVehicles } from "../../hooks/useVehicles";
 import { useClients } from "../../hooks/useClients";
@@ -74,7 +75,6 @@ export function RentalFormModal({ onSuccess }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(INITIAL);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const { vehicles } = useVehicles();
   const { clients } = useClients();
@@ -98,11 +98,10 @@ export function RentalFormModal({ onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (form.endDate && form.startDate && new Date(form.endDate) <= new Date(form.startDate)) {
-      setError("La fecha de fin debe ser posterior a la fecha de inicio");
+      toast.error("La fecha de fin debe ser posterior a la fecha de inicio");
       return;
     }
     setLoading(true);
-    setError(null);
     try {
       await rentalService.create({
         clientId: form.clientId,
@@ -115,11 +114,12 @@ export function RentalFormModal({ onSuccess }) {
         mileageStart: form.mileageStart ? Number(form.mileageStart) : undefined,
         notes: form.notes || null,
       });
+      toast.success("Alquiler creado exitosamente");
       setOpen(false);
       setForm(INITIAL);
       onSuccess?.();
     } catch (err) {
-      setError(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al crear el alquiler");
+      toast.error(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al crear el alquiler");
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export function RentalFormModal({ onSuccess }) {
 
   function handleOpenChange(val) {
     setOpen(val);
-    if (!val) { setForm(INITIAL); setError(null); }
+    if (!val) setForm(INITIAL);
   }
 
   return (
@@ -223,10 +223,6 @@ export function RentalFormModal({ onSuccess }) {
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
             />
           </Field>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

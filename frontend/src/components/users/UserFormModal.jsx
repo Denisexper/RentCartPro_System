@@ -11,6 +11,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 import { userService } from "../../services/user.service";
 import { useAuthStore } from "../../store/authStore";
 
@@ -34,7 +35,6 @@ export function UserFormModal({ onSuccess }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(INITIAL);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const user = useAuthStore((s) => s.user);
 
   function set(field) {
@@ -54,12 +54,13 @@ export function UserFormModal({ onSuccess }) {
         role: form.role,
         active: form.active,
       });
+      toast.success("Usuario creado exitosamente");
       setOpen(false);
       setForm(INITIAL);
       onSuccess?.();
     } catch (err) {
       const msg = err.response?.data?.msj ?? err.response?.data?.message;
-      setError(msg === "Email already exists" ? "Ese email ya está en uso." : (msg ?? "Error al crear el usuario."));
+      toast.error(msg === "Email already exists" ? "Ese email ya está en uso." : (msg ?? "Error al crear el usuario."));
     } finally {
       setLoading(false);
     }
@@ -67,7 +68,7 @@ export function UserFormModal({ onSuccess }) {
 
   function handleOpenChange(val) {
     setOpen(val);
-    if (!val) { setForm(INITIAL); setError(null); }
+    if (!val) setForm(INITIAL);
   }
 
   return (
@@ -138,10 +139,6 @@ export function UserFormModal({ onSuccess }) {
               </label>
             </Field>
           </div>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

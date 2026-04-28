@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { usePermissions } from "../hooks/usePermissions";
 import { usePayments } from "../hooks/usePayments";
 import { PaymentFormModal } from "../components/payments/PaymentFormModal";
@@ -76,8 +77,11 @@ export default function PaymentsPage() {
     setDeleting(true);
     try {
       await paymentService.remove(deletePayment.id);
+      toast.success("Pago eliminado");
       setDeletePayment(null);
       refetch();
+    } catch {
+      toast.error("No se pudo eliminar el pago");
     } finally {
       setDeleting(false);
     }

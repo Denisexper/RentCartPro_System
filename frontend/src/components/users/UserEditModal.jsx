@@ -10,6 +10,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 import { userService } from "../../services/user.service";
 
 const ROLES = ["Admin", "Operator", "Auditor"];
@@ -27,7 +28,6 @@ function Field({ label, children }) {
 export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -38,7 +38,6 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
         role: user.role ?? "Operator",
         active: user.active ?? true,
       });
-      setError(null);
     }
   }, [user]);
 
@@ -60,11 +59,12 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
       if (form.password.trim()) payload.password = form.password;
 
       await userService.update(user.id, payload);
+      toast.success("Usuario actualizado exitosamente");
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
       const msg = err.response?.data?.msj ?? err.response?.data?.message;
-      setError(msg === "Email already in use by another user" ? "Ese email ya está en uso." : (msg ?? "Error al actualizar el usuario."));
+      toast.error(msg === "Email already in use by another user" ? "Ese email ya está en uso." : (msg ?? "Error al actualizar el usuario."));
     } finally {
       setLoading(false);
     }
@@ -126,10 +126,6 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
               </label>
             </Field>
           </div>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

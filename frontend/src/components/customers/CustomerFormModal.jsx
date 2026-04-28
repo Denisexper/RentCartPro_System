@@ -11,6 +11,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 import { clientService } from "../../services/client.service";
 
 const ID_TYPES = ["DUI", "Passport", "NIT", "Other"];
@@ -51,7 +52,6 @@ export function CustomerFormModal({ onSuccess }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(INITIAL);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   function set(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -64,7 +64,6 @@ export function CustomerFormModal({ onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     try {
       const payload = {
         firstName: form.firstName,
@@ -79,11 +78,12 @@ export function CustomerFormModal({ onSuccess }) {
         notes: form.notes || null,
       };
       await clientService.create(payload);
+      toast.success("Cliente creado exitosamente");
       setOpen(false);
       setForm(INITIAL);
       onSuccess?.();
     } catch (err) {
-      setError(err.response?.data?.message ?? "Error al crear el cliente");
+      toast.error(err.response?.data?.message ?? "Error al crear el cliente");
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export function CustomerFormModal({ onSuccess }) {
 
   function handleOpenChange(val) {
     setOpen(val);
-    if (!val) { setForm(INITIAL); setError(null); }
+    if (!val) setForm(INITIAL);
   }
 
   return (
@@ -162,10 +162,6 @@ export function CustomerFormModal({ onSuccess }) {
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
             />
           </Field>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

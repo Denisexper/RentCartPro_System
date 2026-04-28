@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Combobox } from "../ui/combobox";
+import { toast } from "sonner";
 import { paymentService } from "../../services/payment.service";
 import { useRentals } from "../../hooks/useRentals";
 
@@ -69,7 +70,6 @@ export function PaymentFormModal({ onSuccess }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(INITIAL);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const { rentals } = useRentals();
   const activeRentals = rentals.filter((r) => r.status === "Active");
@@ -87,7 +87,6 @@ export function PaymentFormModal({ onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     try {
       await paymentService.create({
         rentalId: form.rentalId,
@@ -97,11 +96,12 @@ export function PaymentFormModal({ onSuccess }) {
         reference: form.reference || null,
         notes: form.notes || null,
       });
+      toast.success("Pago registrado exitosamente");
       setOpen(false);
       setForm(INITIAL);
       onSuccess?.();
     } catch (err) {
-      setError(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al registrar el pago");
+      toast.error(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al registrar el pago");
     } finally {
       setLoading(false);
     }
@@ -109,7 +109,7 @@ export function PaymentFormModal({ onSuccess }) {
 
   function handleOpenChange(val) {
     setOpen(val);
-    if (!val) { setForm(INITIAL); setError(null); }
+    if (!val) setForm(INITIAL);
   }
 
   return (
@@ -198,10 +198,6 @@ export function PaymentFormModal({ onSuccess }) {
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
             />
           </Field>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

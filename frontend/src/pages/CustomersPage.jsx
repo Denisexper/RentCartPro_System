@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { usePermissions } from "../hooks/usePermissions";
 import { useClients } from "../hooks/useClients";
 import { CustomerFormModal } from "../components/customers/CustomerFormModal";
@@ -78,8 +79,11 @@ export default function CustomersPage() {
     setDeleting(true);
     try {
       await clientService.remove(deleteClient.id);
+      toast.success("Cliente eliminado");
       setDeleteClient(null);
       refetch();
+    } catch {
+      toast.error("No se pudo eliminar el cliente");
     } finally {
       setDeleting(false);
     }

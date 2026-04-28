@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { usePermissions } from "../hooks/usePermissions";
 import { useVehicles } from "../hooks/useVehicles";
 import { VehicleStatusBadge } from "../components/vehicles/VehicleStatusBadge";
@@ -43,7 +44,10 @@ export default function VehiclesPage() {
     setDeleting(id);
     try {
       await vehicleService.remove(id);
+      toast.success("Vehículo eliminado");
       refetch();
+    } catch {
+      toast.error("No se pudo eliminar el vehículo");
     } finally {
       setDeleting(null);
     }

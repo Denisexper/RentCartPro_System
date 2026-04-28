@@ -10,6 +10,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 import { rentalService } from "../../services/rental.service";
 
 const FUEL_LEVELS = ["Full", "ThreeQuarters", "Half", "Quarter", "Empty"];
@@ -47,7 +48,6 @@ function NativeSelect({ value, onChange, options, labels }) {
 export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (rental) {
@@ -58,7 +58,6 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
         extraCharges: "",
         notes: rental.notes ?? "",
       });
-      setError(null);
     }
   }, [rental]);
 
@@ -78,7 +77,6 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     try {
       await rentalService.update(rental.id, {
         status: "Completed",
@@ -88,10 +86,11 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
         extraCharges: extraCharges,
         notes: form.notes || null,
       });
+      toast.success("Devolución registrada exitosamente");
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      setError(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al registrar la devolución");
+      toast.error(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al registrar la devolución");
     } finally {
       setLoading(false);
     }
@@ -174,10 +173,6 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
               <span>${newTotal.toFixed(2)}</span>
             </div>
           </div>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

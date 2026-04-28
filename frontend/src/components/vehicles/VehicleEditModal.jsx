@@ -10,6 +10,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 import { vehicleService } from "../../services/vehicle.service";
 
 const CATEGORIES = ["Economy", "Compact", "Sedan", "SUV", "Pickup", "Van", "Luxury"];
@@ -58,7 +59,6 @@ function NativeSelect({ value, onChange, options, labels }) {
 export function VehicleEditModal({ vehicle, open, onOpenChange, onSuccess }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (vehicle) {
@@ -77,7 +77,6 @@ export function VehicleEditModal({ vehicle, open, onOpenChange, onSuccess }) {
         status: vehicle.status ?? "Available",
         notes: vehicle.notes ?? "",
       });
-      setError(null);
     }
   }, [vehicle]);
 
@@ -92,7 +91,6 @@ export function VehicleEditModal({ vehicle, open, onOpenChange, onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     try {
       await vehicleService.update(vehicle.id, {
         ...form,
@@ -101,10 +99,11 @@ export function VehicleEditModal({ vehicle, open, onOpenChange, onSuccess }) {
         mileage: Number(form.mileage),
         seats: Number(form.seats),
       });
+      toast.success("Vehículo actualizado exitosamente");
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      setError(err.response?.data?.message ?? "Error al actualizar el vehículo");
+      toast.error(err.response?.data?.message ?? "Error al actualizar el vehículo");
     } finally {
       setLoading(false);
     }
@@ -188,10 +187,6 @@ export function VehicleEditModal({ vehicle, open, onOpenChange, onSuccess }) {
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
             />
           </Field>
-
-          {error && (
-            <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
-          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>
