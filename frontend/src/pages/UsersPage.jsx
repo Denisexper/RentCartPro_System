@@ -1,10 +1,22 @@
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Navigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useUsers } from "../hooks/useUsers";
 import { usePermissions } from "../hooks/usePermissions";
+import { userService } from "../services/user.service";
 import { UserFormModal } from "../components/users/UserFormModal";
 import { UserEditModal } from "../components/users/UserEditModal";
+import {
+  AlertDialogRoot,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../components/ui/alert-dialog";
+import { Button } from "../components/ui/button";
 
 const COLUMNS = ["Usuario", "Email", "Rol", "Estado", ""];
 
@@ -52,6 +64,8 @@ export default function UsersPage() {
   const { manageUsers } = usePermissions();
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState(null);
+  const [deleteUser, setDeleteUser] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   if (!manageUsers) return <Navigate to="/dashboard" replace />;
 
@@ -63,6 +77,21 @@ export default function UsersPage() {
       u.role?.toLowerCase().includes(q)
     );
   });
+
+  async function confirmDelete() {
+    if (!deleteUser) return;
+    setDeleting(true);
+    try {
+      await userService.remove(deleteUser.id);
+      toast.success("Usuario eliminado");
+      setDeleteUser(null);
+      refetch();
+    } catch {
+      toast.error("No se pudo eliminar el usuario");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -135,14 +164,23 @@ export default function UsersPage() {
                   <td className="px-4 py-3">
                     <ActiveBadge active={u.active} />
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => setEditUser(u)}
-                      className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                      title="Editar usuario"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => setEditUser(u)}
+                        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        title="Editar usuario"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteUser(u)}
+                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        title="Eliminar usuario"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -157,6 +195,32 @@ export default function UsersPage() {
         onOpenChange={(v) => { if (!v) setEditUser(null); }}
         onSuccess={() => { setEditUser(null); refetch(); }}
       />
+
+      <AlertDialogRoot open={!!deleteUser} onOpenChange={(v) => { if (!v) setDeleteUser(null); }}>
+        <AlertDialogContent>
+          <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Estás a punto de eliminar a{" "}
+            <span className="font-medium text-foreground">{deleteUser?.name}</span>{" "}
+            ({deleteUser?.email}). Esta acción no se puede deshacer.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={deleting}>Cancelar</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                disabled={deleting}
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Eliminando..." : "Sí, eliminar"}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogRoot>
 
       {!loading && !error && filtered.length > 0 && (
         <p className="text-xs text-muted-foreground">
