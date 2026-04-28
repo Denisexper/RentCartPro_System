@@ -11,6 +11,7 @@ export interface RentalRepositoryInterface {
   create(data: CreateRentalInput): Promise<Rental>;
   update(id: string, data: UpdateRentalInput): Promise<Rental>;
   delete(id: string): Promise<Rental>;
+  forceDelete(id: string): Promise<Rental>;
 
   // Helpers para validaciones de negocio
   findVehicle(vehicleId: string): Promise<Vehicle | null>;

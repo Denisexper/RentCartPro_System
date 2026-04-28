@@ -53,6 +53,13 @@ export class RentalRoutes {
       authorizeRoles("SuperAdmin", "Admin"),
       (req: Request<{ id: string }>, res: Response) => this.controller.delete(req, res)
     );
+    this.router.delete(
+      "/:id/force",
+      authMiddleware,
+      tenantMiddleware,
+      authorizeRoles("SuperAdmin", "Admin"),
+      (req: Request<{ id: string }>, res: Response) => this.controller.forceDelete(req, res)
+    );
 
     return this.router;
   }

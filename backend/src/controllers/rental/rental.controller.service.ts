@@ -141,6 +141,18 @@ export class RentalControllerService {
     }
   }
 
+  async forceDelete(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+    try {
+      const deleted = await this.repository.forceDelete(id);
+      return res.status(200).json({ msj: "Rental force deleted successfully", data: deleted });
+    } catch (error: any) {
+      if (error.status) return res.status(error.status).json({ msj: error.message });
+      if (error.code === "P2025") return res.status(404).json({ msj: "Rental not found" });
+      return res.status(500).json({ msj: "Server error", error: error.message });
+    }
+  }
+
   async delete(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
     try {

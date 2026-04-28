@@ -48,6 +48,22 @@ export class RentalRepository implements RentalRepositoryInterface {
     return this.prisma.rental.delete({ where: { id } });
   }
 
+  async forceDelete(id: string): Promise<Rental> {
+    return this.prisma.$transaction(async (tx) => {
+      const rental = await tx.rental.findUnique({ where: { id } });
+      if (!rental) throw { status: 404, message: "Rental not found" };
+
+      if (rental.status === "Active") {
+        await tx.vehicle.update({
+          where: { id: rental.vehicleId },
+          data: { status: "Available" },
+        });
+      }
+
+      return tx.rental.delete({ where: { id } });
+    });
+  }
+
   async findVehicle(vehicleId: string): Promise<Vehicle | null> {
     return this.prisma.vehicle.findUnique({ where: { id: vehicleId } });
   }
