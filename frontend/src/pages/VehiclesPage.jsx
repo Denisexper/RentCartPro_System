@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { usePermissions } from "../hooks/usePermissions";
 import { useVehicles } from "../hooks/useVehicles";
 import { VehicleStatusBadge } from "../components/vehicles/VehicleStatusBadge";
 import { VehicleFormModal } from "../components/vehicles/VehicleFormModal";
@@ -33,6 +34,7 @@ function TableSkeleton() {
 
 export default function VehiclesPage() {
   const { vehicles, loading, error, refetch } = useVehicles();
+  const { manageVehicles } = usePermissions();
   const [search, setSearch] = useState("");
   const [editVehicle, setEditVehicle] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -63,7 +65,7 @@ export default function VehiclesPage() {
           <h1 className="text-xl font-semibold">Vehículos</h1>
           <p className="text-sm text-muted-foreground">Gestión de la flota</p>
         </div>
-        <VehicleFormModal onSuccess={refetch} />
+        {manageVehicles && <VehicleFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">
@@ -127,52 +129,54 @@ export default function VehiclesPage() {
                     <VehicleStatusBadge status={v.status} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => setEditVehicle(v)}
-                        title="Editar vehículo"
-                      >
-                        <Pencil />
-                      </Button>
+                    {manageVehicles && (
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => setEditVehicle(v)}
+                          title="Editar vehículo"
+                        >
+                          <Pencil />
+                        </Button>
 
-                      <AlertDialogRoot>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            title="Eliminar vehículo"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogTitle>¿Eliminar vehículo?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta acción eliminará permanentemente el vehículo{" "}
-                            <span className="font-mono font-medium text-foreground">{v.plate}</span>{" "}
-                            ({v.brand} {v.model}). No se puede deshacer.
-                          </AlertDialogDescription>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel asChild>
-                              <Button variant="outline">Cancelar</Button>
-                            </AlertDialogCancel>
-                            <AlertDialogAction asChild>
-                              <Button
-                                variant="destructive"
-                                disabled={deleting === v.id}
-                                onClick={() => handleDelete(v.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                {deleting === v.id ? "Eliminando..." : "Sí, eliminar"}
-                              </Button>
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialogRoot>
-                    </div>
+                        <AlertDialogRoot>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              title="Eliminar vehículo"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogTitle>¿Eliminar vehículo?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción eliminará permanentemente el vehículo{" "}
+                              <span className="font-mono font-medium text-foreground">{v.plate}</span>{" "}
+                              ({v.brand} {v.model}). No se puede deshacer.
+                            </AlertDialogDescription>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel asChild>
+                                <Button variant="outline">Cancelar</Button>
+                              </AlertDialogCancel>
+                              <AlertDialogAction asChild>
+                                <Button
+                                  variant="destructive"
+                                  disabled={deleting === v.id}
+                                  onClick={() => handleDelete(v.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  {deleting === v.id ? "Eliminando..." : "Sí, eliminar"}
+                                </Button>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialogRoot>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))

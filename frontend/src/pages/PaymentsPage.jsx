@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { usePermissions } from "../hooks/usePermissions";
 import { usePayments } from "../hooks/usePayments";
 import { PaymentFormModal } from "../components/payments/PaymentFormModal";
 import {
@@ -65,6 +66,7 @@ function TableSkeleton() {
 
 export default function PaymentsPage() {
   const { payments, loading, error, refetch } = usePayments();
+  const { write } = usePermissions();
   const [search, setSearch] = useState("");
   const [deletePayment, setDeletePayment] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -96,7 +98,7 @@ export default function PaymentsPage() {
           <h1 className="text-xl font-semibold">Pagos</h1>
           <p className="text-sm text-muted-foreground">Registro de pagos del rentcar</p>
         </div>
-        <PaymentFormModal onSuccess={refetch} />
+        {write && <PaymentFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">

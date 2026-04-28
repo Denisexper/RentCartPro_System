@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { usePermissions } from "../hooks/usePermissions";
 import { useClients } from "../hooks/useClients";
 import { CustomerFormModal } from "../components/customers/CustomerFormModal";
 import { CustomerEditModal } from "../components/customers/CustomerEditModal";
@@ -48,6 +49,7 @@ function TableSkeleton() {
 
 export default function CustomersPage() {
   const { clients, loading, error, refetch } = useClients();
+  const { write } = usePermissions();
   const [search, setSearch] = useState("");
 
   const [editClient, setEditClient] = useState(null);
@@ -90,7 +92,7 @@ export default function CustomersPage() {
           <h1 className="text-xl font-semibold">Clientes</h1>
           <p className="text-sm text-muted-foreground">Gestión de clientes del rentcar</p>
         </div>
-        <CustomerFormModal onSuccess={refetch} />
+        {write && <CustomerFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">
@@ -162,22 +164,24 @@ export default function CustomersPage() {
                     <BlacklistedBadge value={c.blacklisted} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 justify-end">
-                      <button
-                        onClick={() => openEdit(c)}
-                        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                        title="Editar cliente"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteClient(c)}
-                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                        title="Eliminar cliente"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {write && (
+                      <div className="flex items-center gap-1 justify-end">
+                        <button
+                          onClick={() => openEdit(c)}
+                          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          title="Editar cliente"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteClient(c)}
+                          className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          title="Eliminar cliente"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))

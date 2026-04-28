@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { usePermissions } from "../hooks/usePermissions";
 import { useRentals } from "../hooks/useRentals";
 import { RentalFormModal } from "../components/rentals/RentalFormModal";
 import { RentalReturnModal } from "../components/rentals/RentalReturnModal";
@@ -66,6 +67,7 @@ function TableSkeleton() {
 
 export default function RentalsPage() {
   const { rentals, loading, error, refetch } = useRentals();
+  const { write } = usePermissions();
   const [search, setSearch] = useState("");
   const [returnRental, setReturnRental] = useState(null);
   const [returnOpen, setReturnOpen] = useState(false);
@@ -126,7 +128,7 @@ export default function RentalsPage() {
           <h1 className="text-xl font-semibold">Alquileres</h1>
           <p className="text-sm text-muted-foreground">Historial de alquileres del rentcar</p>
         </div>
-        <RentalFormModal onSuccess={refetch} />
+        {write && <RentalFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">
@@ -209,22 +211,22 @@ export default function RentalsPage() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    {r.status === "Active" && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openReturn(r)}
-                          className="rounded-lg px-3 py-1 text-xs font-medium border border-border hover:bg-muted transition-colors"
-                        >
-                          Devolver
-                        </button>
-                        <button
-                          onClick={() => openCancel(r)}
-                          className="rounded-lg px-3 py-1 text-xs font-medium border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    )}
+                      {write && r.status === "Active" && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openReturn(r)}
+                            className="rounded-lg px-3 py-1 text-xs font-medium border border-border hover:bg-muted transition-colors"
+                          >
+                            Devolver
+                          </button>
+                          <button
+                            onClick={() => openCancel(r)}
+                            className="rounded-lg px-3 py-1 text-xs font-medium border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>

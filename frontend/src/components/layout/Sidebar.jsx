@@ -9,19 +9,21 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/vehicles", label: "Vehículos", icon: Car },
-  { to: "/customers", label: "Clientes", icon: Users },
-  { to: "/rentals", label: "Alquileres", icon: FileText },
-  { to: "/payments", label: "Pagos", icon: CreditCard },
-  { to: "/users", label: "Usuarios", icon: UserCog },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, requireManageUsers: false },
+  { to: "/vehicles", label: "Vehículos", icon: Car, requireManageUsers: false },
+  { to: "/customers", label: "Clientes", icon: Users, requireManageUsers: false },
+  { to: "/rentals", label: "Alquileres", icon: FileText, requireManageUsers: false },
+  { to: "/payments", label: "Pagos", icon: CreditCard, requireManageUsers: false },
+  { to: "/users", label: "Usuarios", icon: UserCog, requireManageUsers: true },
 ];
 
 export default function Sidebar() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const { manageUsers } = usePermissions();
 
   const handleLogout = () => {
     logout();
@@ -37,7 +39,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ to, label, icon: Icon }) => (
+        {navItems.filter((item) => !item.requireManageUsers || manageUsers).map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}

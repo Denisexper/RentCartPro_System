@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Pencil } from "lucide-react";
+import { Navigate } from "react-router-dom";
 import { useUsers } from "../hooks/useUsers";
+import { usePermissions } from "../hooks/usePermissions";
 import { UserFormModal } from "../components/users/UserFormModal";
 import { UserEditModal } from "../components/users/UserEditModal";
 
@@ -47,8 +49,11 @@ function TableSkeleton() {
 
 export default function UsersPage() {
   const { users, loading, error, refetch } = useUsers();
+  const { manageUsers } = usePermissions();
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState(null);
+
+  if (!manageUsers) return <Navigate to="/dashboard" replace />;
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
