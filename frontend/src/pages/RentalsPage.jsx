@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useRentals } from "../hooks/useRentals";
 import { RentalFormModal } from "../components/rentals/RentalFormModal";
+import { RentalReturnModal } from "../components/rentals/RentalReturnModal";
 
-const COLUMNS = ["Cliente", "Vehículo", "Inicio", "Fin", "Total", "Estado"];
+const COLUMNS = ["Cliente", "Vehículo", "Inicio", "Fin", "Total", "Estado", ""];
 
 const STATUS_LABELS = {
   Active: "Activo",
@@ -54,6 +55,8 @@ function TableSkeleton() {
 export default function RentalsPage() {
   const { rentals, loading, error, refetch } = useRentals();
   const [search, setSearch] = useState("");
+  const [returnRental, setReturnRental] = useState(null);
+  const [returnOpen, setReturnOpen] = useState(false);
 
   const filtered = rentals.filter((r) => {
     const q = search.toLowerCase();
@@ -61,6 +64,11 @@ export default function RentalsPage() {
     const plate = r.vehicle?.plate?.toLowerCase() ?? "";
     return clientName.includes(q) || plate.includes(q);
   });
+
+  function openReturn(rental) {
+    setReturnRental(rental);
+    setReturnOpen(true);
+  }
 
   return (
     <div className="space-y-4">
@@ -138,10 +146,20 @@ export default function RentalsPage() {
                   <td className="px-4 py-3 font-mono">{formatDate(r.startDate)}</td>
                   <td className="px-4 py-3 font-mono">{formatDate(r.endDate)}</td>
                   <td className="px-4 py-3 font-mono">
-                    ${Number(r.totalCost ?? 0).toFixed(2)}
+                    ${Number(r.totalAmount ?? 0).toFixed(2)}
                   </td>
                   <td className="px-4 py-3">
                     <RentalStatusBadge status={r.status} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {r.status === "Active" && (
+                      <button
+                        onClick={() => openReturn(r)}
+                        className="rounded-lg px-3 py-1 text-xs font-medium border border-border hover:bg-muted transition-colors"
+                      >
+                        Devolver
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -156,6 +174,13 @@ export default function RentalsPage() {
           {search ? ` encontrado${filtered.length !== 1 ? "s" : ""}` : " en total"}
         </p>
       )}
+
+      <RentalReturnModal
+        rental={returnRental}
+        open={returnOpen}
+        onOpenChange={setReturnOpen}
+        onSuccess={refetch}
+      />
     </div>
   );
 }
