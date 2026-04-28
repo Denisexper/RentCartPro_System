@@ -35,11 +35,8 @@ function RentalStatusBadge({ status }) {
 
 function formatDate(iso) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("es-SV", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const [year, month, day] = iso.split("T")[0].split("-");
+  return `${day}/${month}/${year}`;
 }
 
 function TableSkeleton() {
