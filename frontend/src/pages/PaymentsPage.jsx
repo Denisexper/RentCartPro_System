@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePayments } from "../hooks/usePayments";
+import { PaymentFormModal } from "../components/payments/PaymentFormModal";
 
 const COLUMNS = ["Alquiler", "Monto", "Método", "Tipo", "Referencia", "Fecha"];
 
@@ -69,6 +70,7 @@ export default function PaymentsPage() {
           <h1 className="text-xl font-semibold">Pagos</h1>
           <p className="text-sm text-muted-foreground">Registro de pagos del rentcar</p>
         </div>
+        <PaymentFormModal onSuccess={refetch} />
       </div>
 
       <div className="flex items-center gap-2">
