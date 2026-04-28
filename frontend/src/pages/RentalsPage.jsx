@@ -2,6 +2,17 @@ import { useState } from "react";
 import { useRentals } from "../hooks/useRentals";
 import { RentalFormModal } from "../components/rentals/RentalFormModal";
 import { RentalReturnModal } from "../components/rentals/RentalReturnModal";
+import {
+  AlertDialogRoot,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../components/ui/alert-dialog";
+import { Button } from "../components/ui/button";
+import { rentalService } from "../services/rental.service";
 
 const COLUMNS = ["Cliente", "Vehículo", "Inicio", "Fin", "Total", "Estado", ""];
 
@@ -57,6 +68,9 @@ export default function RentalsPage() {
   const [search, setSearch] = useState("");
   const [returnRental, setReturnRental] = useState(null);
   const [returnOpen, setReturnOpen] = useState(false);
+  const [cancelRental, setCancelRental] = useState(null);
+  const [cancelNotes, setCancelNotes] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
   const filtered = rentals.filter((r) => {
     const q = search.toLowerCase();
@@ -68,6 +82,26 @@ export default function RentalsPage() {
   function openReturn(rental) {
     setReturnRental(rental);
     setReturnOpen(true);
+  }
+
+  function openCancel(rental) {
+    setCancelRental(rental);
+    setCancelNotes("");
+  }
+
+  async function confirmCancel() {
+    if (!cancelRental) return;
+    setCancelling(true);
+    try {
+      await rentalService.update(cancelRental.id, {
+        status: "Cancelled",
+        notes: cancelNotes || null,
+      });
+      setCancelRental(null);
+      refetch();
+    } finally {
+      setCancelling(false);
+    }
   }
 
   return (
@@ -151,14 +185,22 @@ export default function RentalsPage() {
                   <td className="px-4 py-3">
                     <RentalStatusBadge status={r.status} />
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3">
                     {r.status === "Active" && (
-                      <button
-                        onClick={() => openReturn(r)}
-                        className="rounded-lg px-3 py-1 text-xs font-medium border border-border hover:bg-muted transition-colors"
-                      >
-                        Devolver
-                      </button>
+                      <div className="flex items-center gap-2 justify-end">
+                        <button
+                          onClick={() => openReturn(r)}
+                          className="rounded-lg px-3 py-1 text-xs font-medium border border-border hover:bg-muted transition-colors"
+                        >
+                          Devolver
+                        </button>
+                        <button
+                          onClick={() => openCancel(r)}
+                          className="rounded-lg px-3 py-1 text-xs font-medium border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -181,6 +223,45 @@ export default function RentalsPage() {
         onOpenChange={setReturnOpen}
         onSuccess={refetch}
       />
+
+      <AlertDialogRoot open={!!cancelRental} onOpenChange={(v) => { if (!v) setCancelRental(null); }}>
+        <AlertDialogContent>
+          <AlertDialogTitle>¿Cancelar alquiler?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Estás a punto de cancelar el alquiler de{" "}
+            <span className="font-mono font-medium text-foreground">{cancelRental?.vehicle?.plate}</span>
+            {" "}para{" "}
+            <span className="font-medium text-foreground">
+              {cancelRental?.client?.firstName} {cancelRental?.client?.lastName}
+            </span>
+            . El vehículo quedará disponible nuevamente.
+          </AlertDialogDescription>
+          <div className="mt-3">
+            <textarea
+              value={cancelNotes}
+              onChange={(e) => setCancelNotes(e.target.value)}
+              placeholder="Motivo de cancelación (opcional)..."
+              rows={2}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={cancelling}>Volver</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                disabled={cancelling}
+                onClick={confirmCancel}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {cancelling ? "Cancelando..." : "Sí, cancelar"}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogRoot>
     </div>
   );
 }
