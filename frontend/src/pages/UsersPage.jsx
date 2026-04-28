@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
 import { useUsers } from "../hooks/useUsers";
+import { UserFormModal } from "../components/users/UserFormModal";
+import { UserEditModal } from "../components/users/UserEditModal";
 
 const COLUMNS = ["Usuario", "Email", "Rol", "Estado", ""];
 
@@ -12,11 +15,7 @@ const ROLE_STYLES = {
 
 function RoleBadge({ role }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        ROLE_STYLES[role] ?? "bg-muted text-muted-foreground"
-      }`}
-    >
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_STYLES[role] ?? "bg-muted text-muted-foreground"}`}>
       {role}
     </span>
   );
@@ -24,13 +23,11 @@ function RoleBadge({ role }) {
 
 function ActiveBadge({ active }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        active
-          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-          : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-      }`}
-    >
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+      active
+        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+        : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+    }`}>
       {active ? "Activo" : "Inactivo"}
     </span>
   );
@@ -51,6 +48,7 @@ function TableSkeleton() {
 export default function UsersPage() {
   const { users, loading, error, refetch } = useUsers();
   const [search, setSearch] = useState("");
+  const [editUser, setEditUser] = useState(null);
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -70,6 +68,7 @@ export default function UsersPage() {
             Cuentas con acceso al panel administrativo
           </p>
         </div>
+        <UserFormModal onSuccess={refetch} />
       </div>
 
       <div className="flex items-center gap-2">
@@ -93,9 +92,7 @@ export default function UsersPage() {
       {error && (
         <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <span>{error}</span>
-          <button onClick={refetch} className="underline text-xs">
-            Reintentar
-          </button>
+          <button onClick={refetch} className="underline text-xs">Reintentar</button>
         </div>
       )}
 
@@ -118,21 +115,13 @@ export default function UsersPage() {
               <TableSkeleton />
             ) : filtered.length === 0 ? (
               <tr>
-                <td
-                  colSpan={COLUMNS.length}
-                  className="px-4 py-8 text-center text-muted-foreground"
-                >
-                  {search
-                    ? "Sin resultados para esa búsqueda."
-                    : "No hay usuarios registrados."}
+                <td colSpan={COLUMNS.length} className="px-4 py-8 text-center text-muted-foreground">
+                  {search ? "Sin resultados para esa búsqueda." : "No hay usuarios registrados."}
                 </td>
               </tr>
             ) : (
               filtered.map((u) => (
-                <tr
-                  key={u.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
+                <tr key={u.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3 font-medium">{u.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                   <td className="px-4 py-3">
@@ -141,13 +130,28 @@ export default function UsersPage() {
                   <td className="px-4 py-3">
                     <ActiveBadge active={u.active} />
                   </td>
-                  <td className="px-4 py-3" />
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => setEditUser(u)}
+                      className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      title="Editar usuario"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      <UserEditModal
+        user={editUser}
+        open={!!editUser}
+        onOpenChange={(v) => { if (!v) setEditUser(null); }}
+        onSuccess={() => { setEditUser(null); refetch(); }}
+      />
 
       {!loading && !error && filtered.length > 0 && (
         <p className="text-xs text-muted-foreground">
