@@ -8,6 +8,7 @@ import CustomersPage from "@/pages/CustomersPage";
 import RentalsPage from "@/pages/RentalsPage";
 import PaymentsPage from "@/pages/PaymentsPage";
 import UsersPage from "@/pages/UsersPage";
+import SuperAdminPage from "@/pages/SuperAdminPage";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/rentals" element={<RentalsPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/superadmin" element={<SuperAdminPage />} />
           <Route index element={<Navigate to="/dashboard" replace />} />
         </Route>
 

@@ -6,6 +6,7 @@ import {
   FileText,
   CreditCard,
   UserCog,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -23,7 +24,7 @@ const navItems = [
 export default function Sidebar() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
-  const { manageUsers } = usePermissions();
+  const { manageUsers, role } = usePermissions();
 
   const handleLogout = () => {
     logout();
@@ -56,6 +57,24 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {role === "SuperAdmin" && (
+        <div className="px-3 pb-2 border-t border-sidebar-border pt-3">
+          <NavLink
+            to="/superadmin"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-purple-600 text-white"
+                  : "text-purple-400 hover:bg-purple-900/30 hover:text-purple-300"
+              }`
+            }
+          >
+            <ShieldCheck size={18} />
+            Panel SuperAdmin
+          </NavLink>
+        </div>
+      )}
 
       <div className="px-3 py-4 border-t border-sidebar-border">
         <button

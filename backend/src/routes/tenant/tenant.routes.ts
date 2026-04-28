@@ -14,6 +14,12 @@ export class TenantRoutes {
 
   initRoutes() {
     this.router.get(
+      "/stats",
+      authMiddleware,
+      authorizeRoles("SuperAdmin"),
+      (req: Request, res: Response) => this.controller.getStats(req, res)
+    );
+    this.router.get(
       "/",
       authMiddleware,
       authorizeRoles("SuperAdmin"),

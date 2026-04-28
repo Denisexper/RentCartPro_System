@@ -1,5 +1,5 @@
 import { Tenant, PrismaClient } from "@prisma/client";
-import { TenantRepositoryInterface } from "../../interfaces/tenant/tenant.repository.interface";
+import { TenantRepositoryInterface, SuperAdminStats } from "../../interfaces/tenant/tenant.repository.interface";
 import { CreateTenantInput, UpdateTenantInput } from "../../types/tenant/tenant.types";
 
 export class TenantRepository implements TenantRepositoryInterface {
@@ -36,6 +36,23 @@ export class TenantRepository implements TenantRepositoryInterface {
             throw new Error (`${error}`);
         }
     }
+    async getStats(): Promise<SuperAdminStats> {
+        try {
+            const [tenantsTotal, tenantsActive, usersTotal, vehiclesTotal, rentalsTotal] =
+                await Promise.all([
+                    this.prisma.tenant.count(),
+                    this.prisma.tenant.count({ where: { active: true } }),
+                    this.prisma.user.count(),
+                    this.prisma.vehicle.count(),
+                    this.prisma.rental.count(),
+                ]);
+
+            return { tenantsTotal, tenantsActive, usersTotal, vehiclesTotal, rentalsTotal };
+        } catch (error) {
+            throw new Error(`${error}`);
+        }
+    }
+
     async create(data: CreateTenantInput): Promise<Tenant> {
         try {
             

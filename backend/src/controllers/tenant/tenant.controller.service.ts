@@ -49,13 +49,13 @@ export class TenantControllerService {
     try {
       const response = await this.repository.getAll();
 
-      //solo para mostrar campos especificos, visualmente
       const cleanData = response.map((tenant) => ({
         id: tenant.id,
         name: tenant.name,
         slug: tenant.slug,
         plan: tenant.plan,
         active: tenant.active,
+        createdAt: tenant.createdAt,
       }));
 
       return res.status(200).json({
@@ -71,6 +71,16 @@ export class TenantControllerService {
         msj: "Server error",
         error: error.message,
       });
+    }
+  }
+
+  async getStats(req: Request, res: Response) {
+    try {
+      const stats = await this.repository.getStats();
+      return res.status(200).json({ msj: "Stats retrieved successfully", data: stats });
+    } catch (error: any) {
+      console.error("[TenantController] Error en getStats():", error);
+      return res.status(500).json({ msj: "Server error", error: error.message });
     }
   }
 
