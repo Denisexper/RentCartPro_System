@@ -72,7 +72,7 @@ export class RentalControllerService {
 
       // 6. Crear el alquiler (la transaccion cambia el vehiculo a Rented)
       const rental = await this.repository.create({
-        tenantId: req.body.tenantId,
+        tenantId: req.user!.tenantId,
         vehicleId,
         clientId,
         userId: req.user!.id,

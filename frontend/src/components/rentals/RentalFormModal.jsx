@@ -96,6 +96,10 @@ export function RentalFormModal({ onSuccess }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (form.endDate && form.startDate && new Date(form.endDate) <= new Date(form.startDate)) {
+      setError("La fecha de fin debe ser posterior a la fecha de inicio");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -170,7 +174,7 @@ export function RentalFormModal({ onSuccess }) {
               <Input type="date" value={form.startDate} onChange={set("startDate")} required />
             </Field>
             <Field label="Fecha de fin" required>
-              <Input type="date" value={form.endDate} onChange={set("endDate")} required />
+              <Input type="date" value={form.endDate} onChange={set("endDate")} min={form.startDate || undefined} required />
             </Field>
           </div>
 
