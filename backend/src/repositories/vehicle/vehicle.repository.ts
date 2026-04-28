@@ -26,16 +26,11 @@ export class VehicleRepository implements VehicleRepositoryInterface {
 
   async getAll(tenantId?: string): Promise<Vehicle[]> {
     try {
-      //filtramos si no hay empresa no hay datos
-      if (!tenantId) return [];
-
-      //buscamos los vehiculos por el id de la empresa (tenantId)
       const response = await this.prisma.vehicle.findMany({
-        where: { tenantId },
+        where: tenantId ? { tenantId } : undefined,
+        orderBy: { createdAt: "desc" },
       });
-
       return response;
-      
     } catch (error) {
       throw new Error(`${error}`);
     }

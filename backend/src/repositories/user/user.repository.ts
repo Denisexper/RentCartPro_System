@@ -20,10 +20,10 @@ export class UserRepository implements UserRepositoryInterface {
       throw new Error(`${error}`);
     }
   }
-  async getAll(tenantId: string): Promise<User[]> {
+  async getAll(tenantId?: string): Promise<User[]> {
     try {
       const response = await this.prisma.user.findMany({
-        where: { tenantId },
+        where: tenantId ? { tenantId } : undefined,
         orderBy: { createdAt: "desc" },
       });
       return response;

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "@/components/PrivateRoute";
 import MainLayout from "@/components/layout/MainLayout";
+import SuperAdminLayout from "@/components/layout/SuperAdminLayout";
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import VehiclesPage from "@/pages/VehiclesPage";
@@ -8,7 +9,12 @@ import CustomersPage from "@/pages/CustomersPage";
 import RentalsPage from "@/pages/RentalsPage";
 import PaymentsPage from "@/pages/PaymentsPage";
 import UsersPage from "@/pages/UsersPage";
-import SuperAdminPage from "@/pages/SuperAdminPage";
+import SuperAdminDashboard from "@/pages/superadmin/SuperAdminDashboard";
+import SATenantsPage from "@/pages/superadmin/SATenantsPage";
+import SAVehiclesPage from "@/pages/superadmin/SAVehiclesPage";
+import SARentalsPage from "@/pages/superadmin/SARentalsPage";
+import SACustomersPage from "@/pages/superadmin/SACustomersPage";
+import SAUsersPage from "@/pages/superadmin/SAUsersPage";
 
 function App() {
   return (
@@ -16,6 +22,24 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
 
+        {/* Universo SuperAdmin */}
+        <Route
+          path="/superadmin"
+          element={
+            <PrivateRoute>
+              <SuperAdminLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<SuperAdminDashboard />} />
+          <Route path="tenants"   element={<SATenantsPage />} />
+          <Route path="vehicles"  element={<SAVehiclesPage />} />
+          <Route path="rentals"   element={<SARentalsPage />} />
+          <Route path="customers" element={<SACustomersPage />} />
+          <Route path="users"     element={<SAUsersPage />} />
+        </Route>
+
+        {/* Universo Tenant */}
         <Route
           element={
             <PrivateRoute>
@@ -24,12 +48,11 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/vehicles"  element={<VehiclesPage />} />
           <Route path="/customers" element={<CustomersPage />} />
-          <Route path="/rentals" element={<RentalsPage />} />
-          <Route path="/payments" element={<PaymentsPage />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/superadmin" element={<SuperAdminPage />} />
+          <Route path="/rentals"   element={<RentalsPage />} />
+          <Route path="/payments"  element={<PaymentsPage />} />
+          <Route path="/users"     element={<UsersPage />} />
           <Route index element={<Navigate to="/dashboard" replace />} />
         </Route>
 

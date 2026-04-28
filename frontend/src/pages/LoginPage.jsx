@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       const { data } = await api.post("/auth/login", form);
       login(data.token, data.data);
-      navigate("/");
+      navigate(data.data?.role === "SuperAdmin" ? "/superadmin" : "/");
     } catch (err) {
       setError(err.response?.data?.msj || "Credenciales incorrectas");
     } finally {

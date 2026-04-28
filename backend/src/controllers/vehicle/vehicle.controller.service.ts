@@ -62,13 +62,17 @@ export class VehicleControllerService {
   }
 
   async getAll(req: Request, res: Response) {
-    const tenantId = req.user!.tenantId;
+    const isSuperAdmin = req.user!.role === "SuperAdmin";
+    const tenantId = isSuperAdmin
+      ? (req.query.tenantId as string | undefined)
+      : req.user!.tenantId;
 
     try {
       const response = await this.repository.getAll(tenantId);
 
       const cleanData = response.map((vehicle) => ({
         id: vehicle.id,
+        tenantId: vehicle.tenantId,
         plate: vehicle.plate,
         brand: vehicle.brand,
         model: vehicle.model,

@@ -20,9 +20,9 @@ export class RentalRepository implements RentalRepositoryInterface {
     });
   }
 
-  async getAll(tenantId: string): Promise<Rental[]> {
+  async getAll(tenantId?: string): Promise<Rental[]> {
     return this.prisma.rental.findMany({
-      where: { tenantId },
+      where: tenantId ? { tenantId } : undefined,
       include: { vehicle: true, client: true, user: true },
       orderBy: { createdAt: "desc" },
     });

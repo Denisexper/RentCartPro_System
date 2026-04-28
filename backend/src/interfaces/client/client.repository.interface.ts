@@ -4,7 +4,7 @@ import { CreateClientInput, UpdateClientInput } from "../../types/client/client.
 export interface ClientRepositoryInterface {
 
     getById(id: string): Promise<Client | null>
-    getAll(tenantId: string): Promise<Client[]>
+    getAll(tenantId?: string): Promise<Client[]>
     create(data: CreateClientInput): Promise<Client>
     update(id: string, data: UpdateClientInput): Promise<Client>
     delete(id: string): Promise<Client>

@@ -23,10 +23,10 @@ export class ClientRepository implements ClientRepositoryInterface {
             throw new Error (`${error}`)
         }
     }
-    async getAll(tenantId: string): Promise<Client[]> {
+    async getAll(tenantId?: string): Promise<Client[]> {
         try {
             const response = await this.prisma.client.findMany({
-                where: { tenantId },
+                where: tenantId ? { tenantId } : undefined,
                 orderBy: { createdAt: "desc" },
             })
             return response

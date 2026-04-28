@@ -31,7 +31,10 @@ export class ClienteControllerService {
     }
   }
   async getAll(req: Request, res: Response) {
-    const tenantId = req.user!.tenantId;
+    const isSuperAdmin = req.user!.role === "SuperAdmin";
+    const tenantId = isSuperAdmin
+      ? (req.query.tenantId as string | undefined)
+      : req.user!.tenantId;
     try {
       const response = await this.repository.getAll(tenantId);
 
