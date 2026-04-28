@@ -172,7 +172,7 @@ export function CustomerEditModal({ client, open, onOpenChange, onSuccess }) {
                 onChange={(e) => setDirect("blacklisted")(e.target.checked)}
                 className="h-4 w-4 rounded border-border accent-destructive"
               />
-              <span className="text-sm text-destructive font-medium">Marcar como bloqueado (blacklisted)</span>
+              <span className="text-sm text-destructive font-medium">Marcar en la (blacklisted)</span>
             </label>
           </Field>
 

@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
 import { clientService } from "../services/client.service";
+import { Button } from "../components/ui/button";
 
 const COLUMNS = ["Nombre", "Teléfono", "Documento", "Licencia", "Blacklisted", ""];
 
@@ -22,13 +23,13 @@ function BlacklistedBadge({ value }) {
   if (value) {
     return (
       <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-        Bloqueado
+        Si
       </span>
     );
   }
   return (
     <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-      Activo
+      No
     </span>
   );
 }
@@ -210,13 +211,18 @@ export default function CustomersPage() {
             (Doc: {deleteClient?.idNumber}). Esta acción no se puede deshacer.
           </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? "Eliminando..." : "Eliminar"}
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={deleting}>Cancelar</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                disabled={deleting}
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Eliminando..." : "Sí, eliminar"}
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
