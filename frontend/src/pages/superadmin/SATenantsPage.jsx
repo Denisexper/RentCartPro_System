@@ -1,8 +1,20 @@
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { useTenants } from "@/hooks/useTenants";
 import { TenantFormModal } from "@/components/superadmin/TenantFormModal";
 import { TenantEditModal } from "@/components/superadmin/TenantEditModal";
+import { tenantService } from "@/services/tenant.service";
+import {
+  AlertDialogRoot,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 const PLAN_STYLES = {
   Basic:      "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
@@ -53,6 +65,24 @@ function RowSkeleton() {
 export default function SATenantsPage() {
   const { tenants, loading, error, refetch } = useTenants();
   const [editTenant, setEditTenant] = useState(null);
+  const [deleteTenant, setDeleteTenant] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  async function confirmDelete() {
+    if (!deleteTenant) return;
+    setDeleting(true);
+    try {
+      await tenantService.remove(deleteTenant.id);
+      toast.success(`Empresa "${deleteTenant.name}" eliminada`);
+      setDeleteTenant(null);
+      refetch();
+    } catch (err) {
+      const msg = err.response?.data?.msj ?? "No se pudo eliminar la empresa.";
+      toast.error(msg);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -99,13 +129,22 @@ export default function SATenantsPage() {
                   <td className="px-4 py-3"><ActiveBadge active={t.active} /></td>
                   <td className="px-4 py-3 font-mono text-muted-foreground">{formatDate(t.createdAt)}</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => setEditTenant(t)}
-                      className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                      title="Editar empresa"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1 justify-end">
+                      <button
+                        onClick={() => setEditTenant(t)}
+                        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        title="Editar empresa"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteTenant(t)}
+                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        title="Eliminar empresa"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -126,6 +165,32 @@ export default function SATenantsPage() {
         onOpenChange={(v) => { if (!v) setEditTenant(null); }}
         onSuccess={() => { setEditTenant(null); refetch(); }}
       />
+
+      <AlertDialogRoot open={!!deleteTenant} onOpenChange={(v) => { if (!v) setDeleteTenant(null); }}>
+        <AlertDialogContent>
+          <AlertDialogTitle>¿Eliminar empresa?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Estás a punto de eliminar{" "}
+            <span className="font-medium text-foreground">{deleteTenant?.name}</span>{" "}
+            (slug: <span className="font-mono">{deleteTenant?.slug}</span>). Esta acción no se puede deshacer y eliminará todos los datos asociados.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={deleting}>Cancelar</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                disabled={deleting}
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Eliminando..." : "Sí, eliminar"}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogRoot>
     </div>
   );
 }
