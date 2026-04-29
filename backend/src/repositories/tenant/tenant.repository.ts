@@ -1,5 +1,5 @@
 import { Tenant, PrismaClient } from "@prisma/client";
-import { TenantRepositoryInterface, SuperAdminStats } from "../../interfaces/tenant/tenant.repository.interface";
+import { TenantRepositoryInterface, SuperAdminStats, TenantWithAdmin } from "../../interfaces/tenant/tenant.repository.interface";
 import { CreateTenantInput, UpdateTenantInput } from "../../types/tenant/tenant.types";
 
 export class TenantRepository implements TenantRepositoryInterface {
@@ -10,6 +10,38 @@ export class TenantRepository implements TenantRepositoryInterface {
         prisma: PrismaClient
     ){
         this.prisma = prisma
+    }
+
+    async getBySlug(slug: string): Promise<Tenant | null> {
+        try {
+            return await this.prisma.tenant.findUnique({ where: { slug } });
+        } catch (error) {
+            throw new Error(`${error}`);
+        }
+    }
+
+    async createWithAdmin(
+        tenantData: { name: string; slug: string; plan?: Tenant['plan']; active?: boolean },
+        adminData: { name: string; email: string; password: string }
+    ): Promise<TenantWithAdmin> {
+        try {
+            return await this.prisma.$transaction(async (tx) => {
+                const tenant = await tx.tenant.create({ data: tenantData });
+                const { password, ...admin } = await tx.user.create({
+                    data: {
+                        tenantId: tenant.id,
+                        name: adminData.name,
+                        email: adminData.email,
+                        password: adminData.password,
+                        role: 'Admin',
+                        active: true,
+                    },
+                });
+                return { tenant, admin };
+            });
+        } catch (error) {
+            throw new Error(`${error}`);
+        }
     }
 
     async getById(id: string): Promise<Tenant | null> {

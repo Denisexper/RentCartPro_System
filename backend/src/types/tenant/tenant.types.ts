@@ -7,3 +7,11 @@ export type CreateTenantInput = Omit<Tenant, 'id' | 'createdAt' | 'updatedAt'> &
 }
 
 export type UpdateTenantInput = Partial<CreateTenantInput>
+
+export type CreateTenantWithAdminInput = {
+  name: string;
+  plan?: Tenant['plan'];
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
+}

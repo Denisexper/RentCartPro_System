@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { TenantRepositoryInterface } from "../../interfaces/tenant/tenant.repository.interface";
 import {
-  CreateTenantInput,
   UpdateTenantInput,
+  CreateTenantWithAdminInput,
 } from "../../types/tenant/tenant.types";
+import { slugify } from "../../utils/slugify";
+import { EncryptService } from "../../services/encrypt.service";
 
 export class TenantControllerService {
   private repository: TenantRepositoryInterface;
@@ -85,38 +87,49 @@ export class TenantControllerService {
   }
 
   async create(req: Request, res: Response) {
-    const data: CreateTenantInput = req.body;
+    const { name, plan, adminName, adminEmail, adminPassword }: CreateTenantWithAdminInput = req.body;
 
-    if (!data.name || !data.slug || !data.plan || !data.active) {
+    if (!name || !adminName || !adminEmail || !adminPassword) {
       return res.status(400).json({
-        msj: "Missing requireds fields",
-        fiels: {
-          name: !data.name ? "Required" : "OK",
-          slug: !data.slug ? "Required" : "OK",
-          plan: !data.plan ? "Required" : "OK",
-          active: !data.active ? "Required" : "OK",
+        msj: "Missing required fields",
+        fields: {
+          name: !name ? "Required" : "OK",
+          adminName: !adminName ? "Required" : "OK",
+          adminEmail: !adminEmail ? "Required" : "OK",
+          adminPassword: !adminPassword ? "Required" : "OK",
         },
       });
     }
+
     try {
-      const response = await this.repository.create(data);
+      const slug = slugify(name);
+
+      if (!slug) {
+        return res.status(400).json({ msj: "El nombre no genera un slug válido" });
+      }
+
+      const slugExists = await this.repository.getBySlug(slug);
+      if (slugExists) {
+        return res.status(409).json({ msj: `El slug '${slug}' ya está en uso. Elige un nombre diferente.` });
+      }
+
+      const hashedPassword = await EncryptService.hashPassword(adminPassword);
+
+      const { tenant, admin } = await this.repository.createWithAdmin(
+        { name, slug, plan: plan ?? 'Basic', active: true },
+        { name: adminName, email: adminEmail, password: hashedPassword }
+      );
 
       return res.status(201).json({
-        msj: "Tenant created successfully",
-        tenant: {
-          id: response.id,
-          name: response.name,
-          slug: response.slug,
-          plan: response.plan,
-          active: response.active,
+        msj: "Empresa creada exitosamente",
+        data: {
+          tenant: { id: tenant.id, name: tenant.name, slug: tenant.slug, plan: tenant.plan, active: tenant.active },
+          admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role },
         },
       });
     } catch (error: any) {
       console.error(`[TenantController] Error en create():`, error);
-      return res.status(500).json({
-        msj: "Server error",
-        error: error.message,
-      });
+      return res.status(500).json({ msj: "Server error", error: error.message });
     }
   }
 
