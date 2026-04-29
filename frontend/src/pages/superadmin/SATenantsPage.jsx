@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { Pencil } from "lucide-react";
 import { useTenants } from "@/hooks/useTenants";
 import { TenantFormModal } from "@/components/superadmin/TenantFormModal";
+import { TenantEditModal } from "@/components/superadmin/TenantEditModal";
 
 const PLAN_STYLES = {
   Basic:      "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
@@ -33,7 +36,7 @@ function formatDate(iso) {
   return `${day}/${month}/${year}`;
 }
 
-const COLUMNS = ["Empresa", "Slug", "Plan", "Estado", "Creado"];
+const COLUMNS = ["Empresa", "Slug", "Plan", "Estado", "Creado", ""];
 
 function RowSkeleton() {
   return Array.from({ length: 5 }).map((_, i) => (
@@ -49,6 +52,7 @@ function RowSkeleton() {
 
 export default function SATenantsPage() {
   const { tenants, loading, error, refetch } = useTenants();
+  const [editTenant, setEditTenant] = useState(null);
 
   return (
     <div className="space-y-4">
@@ -94,6 +98,15 @@ export default function SATenantsPage() {
                   <td className="px-4 py-3"><PlanBadge plan={t.plan} /></td>
                   <td className="px-4 py-3"><ActiveBadge active={t.active} /></td>
                   <td className="px-4 py-3 font-mono text-muted-foreground">{formatDate(t.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => setEditTenant(t)}
+                      className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      title="Editar empresa"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -106,6 +119,13 @@ export default function SATenantsPage() {
           {tenants.length} empresa{tenants.length !== 1 ? "s" : ""} registrada{tenants.length !== 1 ? "s" : ""}
         </p>
       )}
+
+      <TenantEditModal
+        tenant={editTenant}
+        open={!!editTenant}
+        onOpenChange={(v) => { if (!v) setEditTenant(null); }}
+        onSuccess={() => { setEditTenant(null); refetch(); }}
+      />
     </div>
   );
 }
