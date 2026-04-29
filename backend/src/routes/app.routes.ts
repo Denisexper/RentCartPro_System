@@ -14,6 +14,8 @@ import { PaymentRoutes } from "./payment/payment.routes";
 //importaciones modulo rental
 import { RentalRepository } from "../repositories/rental/rental.repository";
 import { RentalControllerService } from "../controllers/rental/rental.controller.service";
+import { RentalPhotoRepository } from "../repositories/rental/rental-photo.repository";
+import { RentalPhotoControllerService } from "../controllers/rental/rental-photo.controller.service";
 import { RentalRoutes } from "./rental/rental.routes";
 
 
@@ -54,7 +56,9 @@ export class AppRoutes {
     // --- configuracion Modulo Rental ---
     const rentalRepo = new RentalRepository(prisma)
     const rentalCtrl = new RentalControllerService(rentalRepo)
-    const rentalRoutes = new RentalRoutes(Router(), rentalCtrl);
+    const rentalPhotoRepo = new RentalPhotoRepository(prisma)
+    const rentalPhotoCtrl = new RentalPhotoControllerService(rentalPhotoRepo)
+    const rentalRoutes = new RentalRoutes(Router(), rentalCtrl, rentalPhotoCtrl);
 
     // --- configuracon Modulo Tenant ---
     const tenantRepo = new TenantRepository(prisma)

@@ -119,6 +119,19 @@ model Rental {
   client        Client       @relation(fields: [clientId], references: [id])
   user          User         @relation(fields: [userId], references: [id])
   payments      Payment[]
+  photos        RentalPhoto[]
+}
+
+// ── RENTAL PHOTO ─────
+model RentalPhoto {
+  id        String    @id @default(cuid())
+  rentalId  String
+  type      PhotoType
+  url       String
+  publicId  String
+  takenAt   DateTime  @default(now())
+
+  rental    Rental    @relation(fields: [rentalId], references: [id])
 }
 
 // ── PAYMENT ──────────
@@ -212,4 +225,9 @@ enum PaymentType {
   Deposit
   Refund
   Extra
+}
+
+enum PhotoType {
+  Checkout
+  Return
 }
