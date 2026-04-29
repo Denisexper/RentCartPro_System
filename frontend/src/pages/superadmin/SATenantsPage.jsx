@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Pencil, Trash2, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { useTenants } from "@/hooks/useTenants";
 import { TenantFormModal } from "@/components/superadmin/TenantFormModal";
 import { TenantEditModal } from "@/components/superadmin/TenantEditModal";
 import { tenantService } from "@/services/tenant.service";
+import { useAuthStore } from "@/store/authStore";
 import {
   AlertDialogRoot,
   AlertDialogContent,
@@ -64,9 +66,25 @@ function RowSkeleton() {
 
 export default function SATenantsPage() {
   const { tenants, loading, error, refetch } = useTenants();
+  const navigate = useNavigate();
+  const impersonate = useAuthStore((s) => s.impersonate);
   const [editTenant, setEditTenant] = useState(null);
   const [deleteTenant, setDeleteTenant] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [enteringId, setEnteringId] = useState(null);
+
+  async function handleEnter(tenant) {
+    setEnteringId(tenant.id);
+    try {
+      const { data } = await tenantService.impersonate(tenant.id);
+      impersonate(data.token, { ...data.data, name: data.data.email });
+      navigate("/dashboard");
+    } catch {
+      toast.error("No se pudo entrar al panel de la empresa.");
+    } finally {
+      setEnteringId(null);
+    }
+  }
 
   async function confirmDelete() {
     if (!deleteTenant) return;
@@ -130,6 +148,14 @@ export default function SATenantsPage() {
                   <td className="px-4 py-3 font-mono text-muted-foreground">{formatDate(t.createdAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 justify-end">
+                      <button
+                        onClick={() => handleEnter(t)}
+                        disabled={!t.active || enteringId === t.id}
+                        className="rounded p-1 text-muted-foreground hover:bg-blue-500/10 hover:text-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Entrar al panel"
+                      >
+                        <LogIn className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() => setEditTenant(t)}
                         className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"

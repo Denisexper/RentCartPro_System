@@ -15,6 +15,38 @@ export class AuthControllerService {
         this.tenantRepo = tenantRepo;
     }
 
+    async impersonate(req: Request<{ tenantId: string }>, res: Response, next: NextFunction) {
+        const { tenantId } = req.params;
+
+        try {
+            const tenant = await this.tenantRepo.getById(tenantId);
+
+            if (!tenant) return next({ status: 404, message: "Empresa no encontrada" });
+            if (!tenant.active) return next({ status: 403, message: "Esta empresa está inactiva" });
+
+            const token = generateToken({
+                id: req.user!.id,
+                tenantId: tenant.id,
+                role: req.user!.role,
+                email: req.user!.email,
+            });
+
+            return res.status(200).json({
+                msj: "Impersonación exitosa",
+                token,
+                data: {
+                    id: req.user!.id,
+                    email: req.user!.email,
+                    tenantId: tenant.id,
+                    role: req.user!.role,
+                    tenantName: tenant.name,
+                },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async register(req: Request<{}, {}, RegisterInput>, res: Response, next: NextFunction) {
         const { name, email, password, tenantId } = req.body;
 

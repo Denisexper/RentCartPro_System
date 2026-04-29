@@ -7,4 +7,5 @@ export const tenantService = {
   create: (data) => api.post("/tenants", data),
   update: (id, data) => api.put(`/tenants/${id}`, data),
   remove: (id) => api.delete(`/tenants/${id}`),
+  impersonate: (tenantId) => api.post(`/auth/impersonate/${tenantId}`),
 };
