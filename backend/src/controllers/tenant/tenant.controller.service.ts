@@ -14,6 +14,19 @@ export class TenantControllerService {
     this.repository = repository;
   }
 
+  async getPublicBySlug(req: Request<{ slug: string }>, res: Response) {
+    const { slug } = req.params;
+    try {
+      const tenant = await this.repository.getBySlug(slug);
+      if (!tenant) return res.status(404).json({ msj: "Empresa no encontrada" });
+      return res.status(200).json({
+        data: { name: tenant.name, slug: tenant.slug, active: tenant.active },
+      });
+    } catch (error: any) {
+      return res.status(500).json({ msj: "Server error", error: error.message });
+    }
+  }
+
   async getById(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
 

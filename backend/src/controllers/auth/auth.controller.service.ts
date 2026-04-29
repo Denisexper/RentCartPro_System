@@ -3,13 +3,16 @@ import { LoginInput, RegisterInput } from "../../types/auth/auth.type";
 import { EncryptService } from "../../services/encrypt.service";
 import { generateToken } from "../../utils/generateToken";
 import { AuthRepository } from "../../repositories/auth/auth.repository";
+import { TenantRepositoryInterface } from "../../interfaces/tenant/tenant.repository.interface";
 
 
 export class AuthControllerService {
     private authRepo: AuthRepository;
+    private tenantRepo: TenantRepositoryInterface;
 
-    constructor(authRepo: AuthRepository) {
+    constructor(authRepo: AuthRepository, tenantRepo: TenantRepositoryInterface) {
         this.authRepo = authRepo;
+        this.tenantRepo = tenantRepo;
     }
 
     async register(req: Request<{}, {}, RegisterInput>, res: Response, next: NextFunction) {
@@ -46,7 +49,7 @@ export class AuthControllerService {
     }
 
     async login(req: Request<{}, {}, LoginInput>, res: Response, next: NextFunction) {
-        const { email, password } = req.body;
+        const { email, password, slug } = req.body;
 
         try {
             const userExist = await this.authRepo.findByEmail(email);
@@ -59,6 +62,25 @@ export class AuthControllerService {
 
             if (!isPasswordValid) {
                 return next({ status: 401, message: "Credenciales incorrectas" });
+            }
+
+            if (slug) {
+                if (slug === "superadmin") {
+                    if (userExist.role !== "SuperAdmin") {
+                        return next({ status: 403, message: "Acceso denegado" });
+                    }
+                } else {
+                    const tenant = await this.tenantRepo.getBySlug(slug);
+                    if (!tenant) {
+                        return next({ status: 404, message: "Empresa no encontrada" });
+                    }
+                    if (!tenant.active) {
+                        return next({ status: 403, message: "Esta empresa está inactiva. Contacta al administrador." });
+                    }
+                    if (userExist.tenantId !== tenant.id) {
+                        return next({ status: 403, message: "Credenciales incorrectas" });
+                    }
+                }
             }
 
             const token = generateToken({

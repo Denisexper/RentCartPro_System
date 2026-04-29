@@ -73,7 +73,7 @@ export class AppRoutes {
 
     // --- configuracion Modulo Auth ---
     const authRepo = new AuthRepository(prisma)
-    const authCtrl = new AuthControllerService(authRepo)
+    const authCtrl = new AuthControllerService(authRepo, tenantRepo)
     const authRoutes = new AuthRoutes(Router(), authCtrl)
 
     // --- Definición de Prefijos de Ruta ---

@@ -3,6 +3,7 @@ import PrivateRoute from "@/components/PrivateRoute";
 import MainLayout from "@/components/layout/MainLayout";
 import SuperAdminLayout from "@/components/layout/SuperAdminLayout";
 import LoginPage from "@/pages/LoginPage";
+import WelcomePage from "@/pages/WelcomePage";
 import DashboardPage from "@/pages/DashboardPage";
 import VehiclesPage from "@/pages/VehiclesPage";
 import CustomersPage from "@/pages/CustomersPage";
@@ -20,7 +21,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<WelcomePage />} />
+        <Route path="/login/:slug" element={<LoginPage />} />
 
         {/* Universo SuperAdmin */}
         <Route

@@ -26,6 +26,10 @@ export class TenantRoutes {
       (req: Request, res: Response) => this.controller.getAll(req, res)
     );
     this.router.get(
+      "/by-slug/:slug",
+      (req: Request<{ slug: string }>, res: Response) => this.controller.getPublicBySlug(req, res)
+    );
+    this.router.get(
       "/:id",
       authMiddleware,
       authorizeRoles("SuperAdmin"),

@@ -1,6 +1,5 @@
 import { User } from "@prisma/client"
 
-export type LoginInput = Pick<User, 'password' |'email'>;
-
+export type LoginInput = Pick<User, 'password' | 'email'> & { slug?: string };
 
 export type RegisterInput = Pick<User, 'name' | 'email' | 'password' | 'tenantId'>;
