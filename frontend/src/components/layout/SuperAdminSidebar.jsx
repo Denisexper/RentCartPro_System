@@ -26,7 +26,7 @@ export default function SuperAdminSidebar() {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/login/superadmin");
   };
 
   return (

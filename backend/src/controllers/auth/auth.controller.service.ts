@@ -131,6 +131,7 @@ export class AuthControllerService {
                     email: userExist.email,
                     tenantId: userExist.tenantId,
                     role: userExist.role,
+                    slug: slug ?? null,
                 },
             });
         } catch (error) {

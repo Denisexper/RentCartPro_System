@@ -27,8 +27,9 @@ export default function Sidebar() {
   const { manageUsers, role } = usePermissions();
 
   const handleLogout = () => {
+    const slug = localStorage.getItem("lastSlug");
     logout();
-    navigate("/login");
+    navigate(slug ? `/login/${slug}` : "/login");
   };
 
   return (

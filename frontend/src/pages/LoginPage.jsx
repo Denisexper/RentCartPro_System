@@ -44,7 +44,7 @@ export default function LoginPage() {
     setError(null);
     try {
       const { data } = await api.post("/auth/login", { ...form, slug });
-      login(data.token, data.data);
+      login(data.token, data.data, data.data.slug ?? slug);
       navigate(data.data?.role === "SuperAdmin" ? "/superadmin" : "/dashboard");
     } catch (err) {
       setError(err.response?.data?.msj || "Credenciales incorrectas");

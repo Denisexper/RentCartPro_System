@@ -3,5 +3,7 @@ import { useAuthStore } from "@/store/authStore";
 
 export default function PrivateRoute({ children }) {
   const token = useAuthStore((state) => state.token);
-  return token ? children : <Navigate to="/login" replace />;
+  if (token) return children;
+  const slug = localStorage.getItem("lastSlug");
+  return <Navigate to={slug ? `/login/${slug}` : "/login"} replace />;
 }

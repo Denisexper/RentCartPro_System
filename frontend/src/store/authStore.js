@@ -7,10 +7,12 @@ export const useAuthStore = create(
       token: null,
       user: null,
       savedSASession: null,
+      lastSlug: null,
 
-      login: (token, user) => {
+      login: (token, user, slug) => {
         localStorage.setItem("token", token);
-        set({ token, user });
+        if (slug) localStorage.setItem("lastSlug", slug);
+        set({ token, user, lastSlug: slug ?? null });
       },
 
       logout: () => {
