@@ -1,4 +1,5 @@
 import { useTenants } from "@/hooks/useTenants";
+import { TenantFormModal } from "@/components/superadmin/TenantFormModal";
 
 const PLAN_STYLES = {
   Basic:      "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
@@ -47,10 +48,18 @@ function RowSkeleton() {
 }
 
 export default function SATenantsPage() {
-  const { tenants, loading, error } = useTenants();
+  const { tenants, loading, error, refetch } = useTenants();
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Empresas</h1>
+          <p className="text-sm text-muted-foreground">Tenants registrados en la plataforma</p>
+        </div>
+        <TenantFormModal onSuccess={refetch} />
+      </div>
+
       {error && (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
