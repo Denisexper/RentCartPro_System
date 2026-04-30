@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { usePermissions } from "../hooks/usePermissions";
 import { useRentals } from "../hooks/useRentals";
 import { RentalFormModal } from "../components/rentals/RentalFormModal";
 import { RentalReturnModal } from "../components/rentals/RentalReturnModal";
+import { RentalDetailModal } from "../components/rentals/RentalDetailModal";
 import {
   AlertDialogRoot,
   AlertDialogContent,
@@ -77,6 +78,8 @@ export default function RentalsPage() {
   const [cancelling, setCancelling] = useState(false);
   const [forceDeleteRental, setForceDeleteRental] = useState(null);
   const [forceDeleting, setForceDeleting] = useState(false);
+  const [detailRental, setDetailRental] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const filtered = rentals.filter((r) => {
     const q = search.toLowerCase();
@@ -212,6 +215,13 @@ export default function RentalsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 justify-end">
                       <button
+                        onClick={() => { setDetailRental(r); setDetailOpen(true); }}
+                        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        title="Ver detalle"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button
                         onClick={() => setForceDeleteRental(r)}
                         className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                         title="Eliminar registro (dev)"
@@ -255,6 +265,12 @@ export default function RentalsPage() {
         open={returnOpen}
         onOpenChange={setReturnOpen}
         onSuccess={refetch}
+      />
+
+      <RentalDetailModal
+        rental={detailRental}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
       />
 
       <AlertDialogRoot open={!!forceDeleteRental} onOpenChange={(v) => { if (!v) setForceDeleteRental(null); }}>
