@@ -1,4 +1,5 @@
 import { UserRepositoryInterface } from "../../interfaces/user/user.repository.interface";
+import { UserWithCustomRole } from "../../interfaces/user/user.repository.interface";
 import { Request, Response } from "express";
 import { CreateUserInput, UpdateUserInput } from "../../types/user/user.types";
 import bcrypt from "bcrypt";
@@ -57,6 +58,8 @@ export class UserControllerService {
         name: user.name,
         email: user.email,
         role: user.role,
+        customRoleId: user.customRoleId,
+        customRole: user.customRole ?? null,
         active: user.active,
       }));
 

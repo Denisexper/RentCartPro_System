@@ -27,7 +27,14 @@ const ROLE_STYLES = {
   Auditor:    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
 };
 
-function RoleBadge({ role }) {
+function RoleBadge({ role, customRole }) {
+  if (customRole) {
+    return (
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+        {customRole.name}
+      </span>
+    );
+  }
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_STYLES[role] ?? "bg-muted text-muted-foreground"}`}>
       {role}
@@ -159,7 +166,7 @@ export default function UsersPage() {
                   <td className="px-4 py-3 font-medium">{u.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                   <td className="px-4 py-3">
-                    <RoleBadge role={u.role} />
+                    <RoleBadge role={u.role} customRole={u.customRole} />
                   </td>
                   <td className="px-4 py-3">
                     <ActiveBadge active={u.active} />

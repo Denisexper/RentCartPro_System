@@ -1,5 +1,5 @@
 import { PrismaClient, User } from "@prisma/client";
-import { UserRepositoryInterface } from "../../interfaces/user/user.repository.interface";
+import { UserRepositoryInterface, UserWithCustomRole } from "../../interfaces/user/user.repository.interface";
 import { CreateUserInput, UpdateUserInput } from "../../types/user/user.types";
 
 export class UserRepository implements UserRepositoryInterface {
@@ -9,10 +9,11 @@ export class UserRepository implements UserRepositoryInterface {
     this.prisma = prisma;
   }
 
-  async getById(id: string): Promise<User | null> {
+  async getById(id: string): Promise<UserWithCustomRole | null> {
     try {
       const response = await this.prisma.user.findUnique({
         where: { id },
+        include: { customRole: { select: { id: true, name: true } } },
       });
 
       return response;
@@ -20,11 +21,12 @@ export class UserRepository implements UserRepositoryInterface {
       throw new Error(`${error}`);
     }
   }
-  async getAll(tenantId?: string): Promise<User[]> {
+  async getAll(tenantId?: string): Promise<UserWithCustomRole[]> {
     try {
       const response = await this.prisma.user.findMany({
         where: tenantId ? { tenantId } : undefined,
         orderBy: { createdAt: "desc" },
+        include: { customRole: { select: { id: true, name: true } } },
       });
       return response;
     } catch (error) {
