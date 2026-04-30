@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   DialogRoot,
   DialogTrigger,
@@ -49,14 +49,13 @@ function Field({ label, children, required }) {
   );
 }
 
-function NativeSelect({ value, onChange, options, labels, placeholder }) {
+function NativeSelect({ value, onChange, options }) {
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="h-8 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
     >
-      {placeholder && <option value="">{placeholder}</option>}
       {options.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
       ))}
@@ -71,10 +70,106 @@ function estimateDays(start, end) {
   return days > 0 ? days : null;
 }
 
+function PhotoUploadStep({ rentalId, onDone }) {
+  const fileInputRef = useRef(null);
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  function handleFileChange(e) {
+    const selected = Array.from(e.target.files);
+    if (!selected.length) return;
+    previews.forEach(URL.revokeObjectURL);
+    setFiles(selected);
+    setPreviews(selected.map((f) => URL.createObjectURL(f)));
+  }
+
+  function removeFile(idx) {
+    URL.revokeObjectURL(previews[idx]);
+    const newFiles = files.filter((_, i) => i !== idx);
+    const newPreviews = previews.filter((_, i) => i !== idx);
+    setFiles(newFiles);
+    setPreviews(newPreviews);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleUpload() {
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      await rentalService.uploadPhotos(rentalId, files, "Checkout");
+      toast.success(`${files.length} foto${files.length !== 1 ? "s" : ""} subida${files.length !== 1 ? "s" : ""} correctamente`);
+      onDone();
+    } catch (err) {
+      toast.error(err.response?.data?.msj ?? "Error al subir fotos");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-8 text-center">
+        <p className="text-sm text-muted-foreground mb-3">
+          Sube fotos de evidencia del vehículo al momento de la entrega
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Seleccionar fotos
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {previews.length > 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          {previews.map((src, i) => (
+            <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
+              <img src={src} alt={`foto ${i + 1}`} className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removeFile(i)}
+                className="absolute top-1 right-1 rounded-full bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onDone} disabled={uploading}>
+          Omitir
+        </Button>
+        <Button
+          type="button"
+          onClick={handleUpload}
+          disabled={!files.length || uploading}
+        >
+          {uploading ? "Subiendo..." : `Subir ${files.length > 0 ? `(${files.length})` : ""} fotos`}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function RentalFormModal({ onSuccess }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(INITIAL);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [createdId, setCreatedId] = useState(null);
 
   const { vehicles } = useVehicles();
   const { clients } = useClients();
@@ -95,6 +190,13 @@ export function RentalFormModal({ onSuccess }) {
     return (value) => setForm((prev) => ({ ...prev, [field]: value }));
   }
 
+  function handleClose() {
+    setOpen(false);
+    setForm(INITIAL);
+    setStep(1);
+    setCreatedId(null);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (form.endDate && form.startDate && new Date(form.endDate) <= new Date(form.startDate)) {
@@ -103,7 +205,7 @@ export function RentalFormModal({ onSuccess }) {
     }
     setLoading(true);
     try {
-      await rentalService.create({
+      const res = await rentalService.create({
         clientId: form.clientId,
         vehicleId: form.vehicleId,
         startDate: new Date(form.startDate).toISOString(),
@@ -115,9 +217,9 @@ export function RentalFormModal({ onSuccess }) {
         notes: form.notes || null,
       });
       toast.success("Alquiler creado exitosamente");
-      setOpen(false);
-      setForm(INITIAL);
       onSuccess?.();
+      setCreatedId(res.data?.data?.id);
+      setStep(2);
     } catch (err) {
       toast.error(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al crear el alquiler");
     } finally {
@@ -126,8 +228,8 @@ export function RentalFormModal({ onSuccess }) {
   }
 
   function handleOpenChange(val) {
-    setOpen(val);
-    if (!val) setForm(INITIAL);
+    if (!val) handleClose();
+    else setOpen(true);
   }
 
   return (
@@ -138,101 +240,113 @@ export function RentalFormModal({ onSuccess }) {
 
       <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Nuevo Alquiler</DialogTitle>
-          <DialogDescription>Registra un nuevo alquiler de vehículo.</DialogDescription>
+          <DialogTitle>
+            {step === 1 ? "Nuevo Alquiler" : "Fotos de Checkout"}
+          </DialogTitle>
+          <DialogDescription>
+            {step === 1
+              ? "Registra un nuevo alquiler de vehículo."
+              : "Sube fotos del estado del vehículo al momento de la entrega (opcional)."}
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Cliente y Vehículo */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Cliente" required>
-              <Combobox
-                value={form.clientId}
-                onChange={setDirect("clientId")}
-                placeholder="Buscar cliente..."
-                options={activeClients.map((c) => ({
-                  value: c.id,
-                  label: `${c.firstName} ${c.lastName} — ${c.idNumber}`,
-                }))}
-              />
-            </Field>
-            <Field label="Vehículo disponible" required>
-              <Combobox
-                value={form.vehicleId}
-                onChange={setDirect("vehicleId")}
-                placeholder="Buscar vehículo..."
-                options={availableVehicles.map((v) => ({
-                  value: v.id,
-                  label: `${v.plate} — ${v.brand} ${v.model} ($${Number(v.dailyRate).toFixed(2)}/día)`,
-                }))}
-              />
-            </Field>
-          </div>
-
-          {/* Fechas */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Fecha de inicio" required>
-              <Input type="date" value={form.startDate} onChange={set("startDate")} required />
-            </Field>
-            <Field label="Fecha de fin" required>
-              <Input type="date" value={form.endDate} onChange={set("endDate")} min={form.startDate || undefined} required />
-            </Field>
-          </div>
-
-          {/* Estimado */}
-          {estimatedTotal && (
-            <div className="rounded-lg bg-muted/50 px-4 py-3 text-sm">
-              <span className="text-muted-foreground">Estimado: </span>
-              <span className="font-medium">{days} día{days !== 1 ? "s" : ""}</span>
-              <span className="text-muted-foreground"> × ${Number(selectedVehicle.dailyRate).toFixed(2)} = </span>
-              <span className="font-semibold text-foreground">${estimatedTotal}</span>
+        {step === 1 && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Cliente y Vehículo */}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Cliente" required>
+                <Combobox
+                  value={form.clientId}
+                  onChange={setDirect("clientId")}
+                  placeholder="Buscar cliente..."
+                  options={activeClients.map((c) => ({
+                    value: c.id,
+                    label: `${c.firstName} ${c.lastName} — ${c.idNumber}`,
+                  }))}
+                />
+              </Field>
+              <Field label="Vehículo disponible" required>
+                <Combobox
+                  value={form.vehicleId}
+                  onChange={setDirect("vehicleId")}
+                  placeholder="Buscar vehículo..."
+                  options={availableVehicles.map((v) => ({
+                    value: v.id,
+                    label: `${v.plate} — ${v.brand} ${v.model} ($${Number(v.dailyRate).toFixed(2)}/día)`,
+                  }))}
+                />
+              </Field>
             </div>
-          )}
 
-          {/* Depósito y Descuento */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Depósito (USD)">
-              <Input type="number" min={0} step="0.01" value={form.deposit} onChange={set("deposit")} placeholder="0.00" />
-            </Field>
-            <Field label="Descuento (USD)">
-              <Input type="number" min={0} step="0.01" value={form.discount} onChange={set("discount")} placeholder="0.00" />
-            </Field>
-          </div>
+            {/* Fechas */}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Fecha de inicio" required>
+                <Input type="date" value={form.startDate} onChange={set("startDate")} required />
+              </Field>
+              <Field label="Fecha de fin" required>
+                <Input type="date" value={form.endDate} onChange={set("endDate")} min={form.startDate || undefined} required />
+              </Field>
+            </div>
 
-          {/* Combustible y Kilometraje */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Combustible al salir">
-              <NativeSelect
-                value={form.fuelOut}
-                onChange={setDirect("fuelOut")}
-                options={FUEL_LEVELS.map((f) => ({ value: f, label: FUEL_LABELS[f] }))}
+            {/* Estimado */}
+            {estimatedTotal && (
+              <div className="rounded-lg bg-muted/50 px-4 py-3 text-sm">
+                <span className="text-muted-foreground">Estimado: </span>
+                <span className="font-medium">{days} día{days !== 1 ? "s" : ""}</span>
+                <span className="text-muted-foreground"> × ${Number(selectedVehicle.dailyRate).toFixed(2)} = </span>
+                <span className="font-semibold text-foreground">${estimatedTotal}</span>
+              </div>
+            )}
+
+            {/* Depósito y Descuento */}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Depósito (USD)">
+                <Input type="number" min={0} step="0.01" value={form.deposit} onChange={set("deposit")} placeholder="0.00" />
+              </Field>
+              <Field label="Descuento (USD)">
+                <Input type="number" min={0} step="0.01" value={form.discount} onChange={set("discount")} placeholder="0.00" />
+              </Field>
+            </div>
+
+            {/* Combustible y Kilometraje */}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Combustible al salir">
+                <NativeSelect
+                  value={form.fuelOut}
+                  onChange={setDirect("fuelOut")}
+                  options={FUEL_LEVELS.map((f) => ({ value: f, label: FUEL_LABELS[f] }))}
+                />
+              </Field>
+              <Field label="Kilometraje inicial">
+                <Input type="number" min={0} value={form.mileageStart} onChange={set("mileageStart")} placeholder="0" />
+              </Field>
+            </div>
+
+            {/* Notas */}
+            <Field label="Notas">
+              <textarea
+                value={form.notes}
+                onChange={set("notes")}
+                rows={2}
+                placeholder="Observaciones adicionales..."
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
               />
             </Field>
-            <Field label="Kilometraje inicial">
-              <Input type="number" min={0} value={form.mileageStart} onChange={set("mileageStart")} placeholder="0" />
-            </Field>
-          </div>
 
-          {/* Notas */}
-          <Field label="Notas">
-            <textarea
-              value={form.notes}
-              onChange={set("notes")}
-              rows={2}
-              placeholder="Observaciones adicionales..."
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
-            />
-          </Field>
+            <div className="flex justify-end gap-2 pt-2">
+              <DialogClose asChild>
+                <Button type="button" variant="outline" disabled={loading}>Cancelar</Button>
+              </DialogClose>
+              <Button type="submit" disabled={loading || !form.clientId || !form.vehicleId}>
+                {loading ? "Guardando..." : "Crear Alquiler"}
+              </Button>
+            </div>
+          </form>
+        )}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={loading}>Cancelar</Button>
-            </DialogClose>
-            <Button type="submit" disabled={loading || !form.clientId || !form.vehicleId}>
-              {loading ? "Guardando..." : "Crear Alquiler"}
-            </Button>
-          </div>
-        </form>
+        {step === 2 && (
+          <PhotoUploadStep rentalId={createdId} onDone={handleClose} />
+        )}
       </DialogContent>
     </DialogRoot>
   );
