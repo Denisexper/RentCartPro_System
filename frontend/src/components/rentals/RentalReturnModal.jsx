@@ -12,6 +12,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { rentalService } from "../../services/rental.service";
+import { PhotoUploadStep } from "./PhotoUploadStep";
 
 const FUEL_LEVELS = ["Full", "ThreeQuarters", "Half", "Quarter", "Empty"];
 const FUEL_LABELS = {
@@ -48,6 +49,7 @@ function NativeSelect({ value, onChange, options, labels }) {
 export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
 
   useEffect(() => {
     if (rental) {
@@ -58,6 +60,7 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
         extraCharges: "",
         notes: rental.notes ?? "",
       });
+      setStep(1);
     }
   }, [rental]);
 
@@ -67,6 +70,11 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
 
   function setDirect(field) {
     return (value) => setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function handleClose() {
+    onOpenChange(false);
+    setStep(1);
   }
 
   const subtotal = Number(rental?.subtotal ?? 0);
@@ -87,8 +95,8 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
         notes: form.notes || null,
       });
       toast.success("Devolución registrada exitosamente");
-      onOpenChange(false);
       onSuccess?.();
+      setStep(2);
     } catch (err) {
       toast.error(err.response?.data?.msj ?? err.response?.data?.message ?? "Error al registrar la devolución");
     } finally {
@@ -99,90 +107,103 @@ export function RentalReturnModal({ rental, open, onOpenChange, onSuccess }) {
   if (!form) return null;
 
   return (
-    <DialogRoot open={open} onOpenChange={onOpenChange}>
+    <DialogRoot open={open} onOpenChange={(val) => { if (!val) handleClose(); else onOpenChange(true); }}>
       <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registrar Devolución</DialogTitle>
+          <DialogTitle>
+            {step === 1 ? "Registrar Devolución" : "Fotos de Devolución"}
+          </DialogTitle>
           <DialogDescription>
-            <span className="font-mono font-medium text-foreground">{rental?.vehicle?.plate}</span>
-            {" "}— {rental?.client?.firstName} {rental?.client?.lastName}
+            {step === 1 ? (
+              <>
+                <span className="font-mono font-medium text-foreground">{rental?.vehicle?.plate}</span>
+                {" "}— {rental?.client?.firstName} {rental?.client?.lastName}
+              </>
+            ) : (
+              "Sube fotos del estado del vehículo al momento de la devolución (opcional)."
+            )}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Fecha real de devolución">
-            <Input type="date" value={form.actualReturn} onChange={set("actualReturn")} />
-          </Field>
+        {step === 1 && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Field label="Fecha real de devolución">
+              <Input type="date" value={form.actualReturn} onChange={set("actualReturn")} />
+            </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Km final">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Km final">
+                <Input
+                  type="number"
+                  min={rental?.mileageStart ?? 0}
+                  value={form.mileageEnd}
+                  onChange={set("mileageEnd")}
+                  placeholder={rental?.mileageStart ?? "0"}
+                />
+              </Field>
+              <Field label="Combustible al entrar">
+                <NativeSelect
+                  value={form.fuelIn}
+                  onChange={setDirect("fuelIn")}
+                  options={FUEL_LEVELS}
+                  labels={FUEL_LABELS}
+                />
+              </Field>
+            </div>
+
+            <Field label="Cargos extra (USD)">
               <Input
                 type="number"
-                min={rental?.mileageStart ?? 0}
-                value={form.mileageEnd}
-                onChange={set("mileageEnd")}
-                placeholder={rental?.mileageStart ?? "0"}
+                min={0}
+                step="0.01"
+                value={form.extraCharges}
+                onChange={set("extraCharges")}
+                placeholder="0.00"
               />
             </Field>
-            <Field label="Combustible al entrar">
-              <NativeSelect
-                value={form.fuelIn}
-                onChange={setDirect("fuelIn")}
-                options={FUEL_LEVELS}
-                labels={FUEL_LABELS}
+
+            <Field label="Notas">
+              <textarea
+                value={form.notes}
+                onChange={set("notes")}
+                rows={2}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
               />
             </Field>
-          </div>
 
-          <Field label="Cargos extra (USD)">
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.extraCharges}
-              onChange={set("extraCharges")}
-              placeholder="0.00"
-            />
-          </Field>
+            <div className="rounded-lg bg-muted/50 px-4 py-3 space-y-1 text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Descuento</span>
+                <span>-${discount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Cargos extra</span>
+                <span>+${extraCharges.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-foreground border-t border-border pt-1">
+                <span>Total</span>
+                <span>${newTotal.toFixed(2)}</span>
+              </div>
+            </div>
 
-          <Field label="Notas">
-            <textarea
-              value={form.notes}
-              onChange={set("notes")}
-              rows={2}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 resize-none"
-            />
-          </Field>
+            <div className="flex justify-end gap-2 pt-2">
+              <DialogClose asChild>
+                <Button type="button" variant="outline" disabled={loading}>Cancelar</Button>
+              </DialogClose>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Procesando..." : "Confirmar Devolución"}
+              </Button>
+            </div>
+          </form>
+        )}
 
-          {/* Resumen del total */}
-          <div className="rounded-lg bg-muted/50 px-4 py-3 space-y-1 text-sm">
-            <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>Descuento</span>
-              <span>-${discount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>Cargos extra</span>
-              <span>+${extraCharges.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-semibold text-foreground border-t border-border pt-1">
-              <span>Total</span>
-              <span>${newTotal.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={loading}>Cancelar</Button>
-            </DialogClose>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Procesando..." : "Confirmar Devolución"}
-            </Button>
-          </div>
-        </form>
+        {step === 2 && (
+          <PhotoUploadStep rentalId={rental.id} type="Return" onDone={handleClose} />
+        )}
       </DialogContent>
     </DialogRoot>
   );

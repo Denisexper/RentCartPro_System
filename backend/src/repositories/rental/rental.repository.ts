@@ -60,6 +60,8 @@ export class RentalRepository implements RentalRepositoryInterface {
         });
       }
 
+      await tx.rentalPhoto.deleteMany({ where: { rentalId: id } });
+
       return tx.rental.delete({ where: { id } });
     });
   }

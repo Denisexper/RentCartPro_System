@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   DialogRoot,
   DialogTrigger,
@@ -16,6 +16,7 @@ import { rentalService } from "../../services/rental.service";
 import { useVehicles } from "../../hooks/useVehicles";
 import { useClients } from "../../hooks/useClients";
 import { Combobox } from "../ui/combobox";
+import { PhotoUploadStep } from "./PhotoUploadStep";
 
 const FUEL_LEVELS = ["Full", "ThreeQuarters", "Half", "Quarter", "Empty"];
 const FUEL_LABELS = {
@@ -70,99 +71,6 @@ function estimateDays(start, end) {
   return days > 0 ? days : null;
 }
 
-function PhotoUploadStep({ rentalId, onDone }) {
-  const fileInputRef = useRef(null);
-  const [files, setFiles] = useState([]);
-  const [previews, setPreviews] = useState([]);
-  const [uploading, setUploading] = useState(false);
-
-  function handleFileChange(e) {
-    const selected = Array.from(e.target.files);
-    if (!selected.length) return;
-    previews.forEach(URL.revokeObjectURL);
-    setFiles(selected);
-    setPreviews(selected.map((f) => URL.createObjectURL(f)));
-  }
-
-  function removeFile(idx) {
-    URL.revokeObjectURL(previews[idx]);
-    const newFiles = files.filter((_, i) => i !== idx);
-    const newPreviews = previews.filter((_, i) => i !== idx);
-    setFiles(newFiles);
-    setPreviews(newPreviews);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
-  async function handleUpload() {
-    if (!files.length) return;
-    setUploading(true);
-    try {
-      await rentalService.uploadPhotos(rentalId, files, "Checkout");
-      toast.success(`${files.length} foto${files.length !== 1 ? "s" : ""} subida${files.length !== 1 ? "s" : ""} correctamente`);
-      onDone();
-    } catch (err) {
-      toast.error(err.response?.data?.msj ?? "Error al subir fotos");
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-8 text-center">
-        <p className="text-sm text-muted-foreground mb-3">
-          Sube fotos de evidencia del vehículo al momento de la entrega
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Seleccionar fotos
-        </Button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleFileChange}
-        />
-      </div>
-
-      {previews.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {previews.map((src, i) => (
-            <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
-              <img src={src} alt={`foto ${i + 1}`} className="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={() => removeFile(i)}
-                className="absolute top-1 right-1 rounded-full bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onDone} disabled={uploading}>
-          Omitir
-        </Button>
-        <Button
-          type="button"
-          onClick={handleUpload}
-          disabled={!files.length || uploading}
-        >
-          {uploading ? "Subiendo..." : `Subir ${files.length > 0 ? `(${files.length})` : ""} fotos`}
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 export function RentalFormModal({ onSuccess }) {
   const [open, setOpen] = useState(false);
@@ -345,7 +253,7 @@ export function RentalFormModal({ onSuccess }) {
         )}
 
         {step === 2 && (
-          <PhotoUploadStep rentalId={createdId} onDone={handleClose} />
+          <PhotoUploadStep rentalId={createdId} type="Checkout" onDone={handleClose} />
         )}
       </DialogContent>
     </DialogRoot>
