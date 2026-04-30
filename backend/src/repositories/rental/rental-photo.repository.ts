@@ -17,7 +17,7 @@ export class RentalPhotoRepository {
   findRentalTenant(rentalId: string) {
     return this.prisma.rental.findUnique({
       where: { id: rentalId },
-      select: { tenantId: true },
+      select: { tenantId: true, tenant: { select: { slug: true } } },
     });
   }
 }

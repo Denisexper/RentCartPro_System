@@ -25,9 +25,10 @@ export class RentalPhotoControllerService {
       if (tenantId && rental.tenantId !== tenantId)
         return next({ status: 403, message: "Acceso denegado" });
 
+      const tenantSlug = rental.tenant?.slug ?? rental.tenantId;
       const saved = await Promise.all(
         files.map(async (file) => {
-          const result = await uploadBuffer(file.buffer, `rentcart/${rentalId}`);
+          const result = await uploadBuffer(file.buffer, `rentcart/${tenantSlug}/${rentalId}`);
           return this.repo.create({
             rentalId,
             type: type as PhotoType,
