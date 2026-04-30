@@ -15,6 +15,7 @@ import { Combobox } from "../ui/combobox";
 import { toast } from "sonner";
 import { paymentService } from "../../services/payment.service";
 import { useRentals } from "../../hooks/useRentals";
+import { usePermissions } from "../../hooks/usePermissions";
 
 const METHODS = ["Cash", "Card", "Transfer", "Check"];
 const METHOD_LABELS = {
@@ -71,7 +72,8 @@ export function PaymentFormModal({ onSuccess }) {
   const [form, setForm] = useState(INITIAL);
   const [loading, setLoading] = useState(false);
 
-  const { rentals } = useRentals();
+  const { can } = usePermissions();
+  const { rentals } = useRentals({ skip: !can("rentals:read") });
   const activeRentals = rentals.filter((r) => r.status === "Active");
 
   const selectedRental = activeRentals.find((r) => r.id === form.rentalId);
