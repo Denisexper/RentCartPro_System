@@ -3,6 +3,8 @@ import { vehicleService } from "@/services/vehicle.service";
 import { rentalService } from "@/services/rental.service";
 import { clientService } from "@/services/client.service";
 import { paymentService } from "@/services/payment.service";
+import { usePermissionsStore } from "@/store/permissionsStore";
+import { useAuthStore } from "@/store/authStore";
 
 const getCurrentMonthIncome = (payments) => {
   const now = new Date();
@@ -18,12 +20,19 @@ const getCurrentMonthIncome = (payments) => {
     .reduce((sum, p) => sum + Number(p.amount), 0);
 };
 
+const safe = (promise) => promise.catch(() => null);
+
 export const useDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { can, loaded } = usePermissionsStore();
+  const role = useAuthStore((s) => s.user?.role);
+  const isSuperAdmin = role === "SuperAdmin";
 
   useEffect(() => {
+    if (!loaded && !isSuperAdmin) return;
+
     const fetchStats = async () => {
       try {
         setLoading(true);
@@ -31,22 +40,22 @@ export const useDashboard = () => {
 
         const [vehiclesRes, rentalsRes, clientsRes, paymentsRes] =
           await Promise.all([
-            vehicleService.getAll(),
-            rentalService.getAll(),
-            clientService.getAll(),
-            paymentService.getAll(),
+            isSuperAdmin || can("vehicles:read") ? safe(vehicleService.getAll()) : Promise.resolve(null),
+            isSuperAdmin || can("rentals:read")  ? safe(rentalService.getAll())  : Promise.resolve(null),
+            isSuperAdmin || can("clients:read")  ? safe(clientService.getAll())  : Promise.resolve(null),
+            isSuperAdmin || can("payments:read") ? safe(paymentService.getAll()) : Promise.resolve(null),
           ]);
 
-        const vehicles = vehiclesRes.data.data ?? [];
-        const rentals = rentalsRes.data.data ?? [];
-        const clients = clientsRes.data.data ?? [];
-        const payments = paymentsRes.data.data ?? [];
+        const vehicles = vehiclesRes?.data?.data ?? [];
+        const rentals  = rentalsRes?.data?.data  ?? [];
+        const clients  = clientsRes?.data?.data  ?? [];
+        const payments = paymentsRes?.data?.data ?? [];
 
         setStats({
-          totalVehicles: vehicles.length,
-          activeRentals: rentals.filter((r) => r.status === "Active").length,
-          totalClients: clients.length,
-          monthlyIncome: getCurrentMonthIncome(payments),
+          totalVehicles: vehiclesRes  ? vehicles.length : null,
+          activeRentals: rentalsRes   ? rentals.filter((r) => r.status === "Active").length : null,
+          totalClients:  clientsRes   ? clients.length : null,
+          monthlyIncome: paymentsRes  ? getCurrentMonthIncome(payments) : null,
         });
       } catch (err) {
         setError("Error al cargar los datos del dashboard");
@@ -57,7 +66,7 @@ export const useDashboard = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [loaded, isSuperAdmin]);
 
   return { stats, loading, error };
 };

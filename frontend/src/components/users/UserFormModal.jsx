@@ -44,7 +44,6 @@ export function UserFormModal({ onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     try {
       await userService.create({
         tenantId: user.tenantId,

@@ -46,7 +46,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {STAT_CARDS.map(({ key, title, icon, color, description, format }) => (
+        {STAT_CARDS.filter(({ key }) => loading || stats?.[key] !== null).map(({ key, title, icon, color, description, format }) => (
           <StatCard
             key={key}
             title={title}

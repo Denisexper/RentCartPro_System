@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { rentalService } from "../services/rental.service";
 
-export function useRentals() {
+export function useRentals({ skip = false } = {}) {
   const [rentals, setRentals] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!skip);
   const [error, setError] = useState(null);
 
   const fetchRentals = useCallback(async () => {
@@ -20,8 +20,8 @@ export function useRentals() {
   }, []);
 
   useEffect(() => {
-    fetchRentals();
-  }, [fetchRentals]);
+    if (!skip) fetchRentals();
+  }, [fetchRentals, skip]);
 
   return { rentals, loading, error, refetch: fetchRentals };
 }
