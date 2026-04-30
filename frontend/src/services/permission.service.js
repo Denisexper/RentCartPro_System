@@ -1,6 +1,9 @@
 import api from "./api";
 
 export const permissionService = {
+  // Permisos del usuario actual
+  getMyPermissions: () => api.get("/permissions/me"),
+
   // Catálogo completo
   getAll: () => api.get("/permissions"),
 

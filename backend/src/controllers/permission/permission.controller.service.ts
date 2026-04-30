@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Role } from "@prisma/client";
 import { PermissionRepository } from "../../repositories/permission/permission.repository";
+import prisma from "../../dataBase/prisma";
 
 const BASE_ROLES: Role[] = ["Admin", "Operator", "Auditor"];
 
@@ -15,6 +16,30 @@ export class PermissionControllerService {
     try {
       const permissions = await this.repository.getAll();
       return res.status(200).json({ msj: "Permissions retrieved successfully", data: permissions });
+    } catch (error: any) {
+      return res.status(500).json({ msj: "Server error", error: error.message });
+    }
+  }
+
+  async getMyPermissions(req: Request, res: Response) {
+    const user = req.user!;
+    try {
+      if (user.role === "SuperAdmin") {
+        const all = await this.repository.getAll();
+        return res.status(200).json({ data: all.map((p) => p.key) });
+      }
+
+      const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+      if (!dbUser) return res.status(401).json({ msj: "Unauthorized" });
+
+      let permissions;
+      if (dbUser.customRoleId) {
+        permissions = await this.repository.getCustomRolePermissions(dbUser.customRoleId);
+      } else {
+        permissions = await this.repository.getBaseRolePermissions(user.tenantId!, dbUser.role as Role);
+      }
+
+      return res.status(200).json({ data: permissions.map((p) => p.key) });
     } catch (error: any) {
       return res.status(500).json({ msj: "Server error", error: error.message });
     }

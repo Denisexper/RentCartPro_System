@@ -61,13 +61,13 @@ function TableSkeleton() {
 
 export default function UsersPage() {
   const { users, loading, error, refetch } = useUsers();
-  const { manageUsers } = usePermissions();
+  const { can } = usePermissions();
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState(null);
   const [deleteUser, setDeleteUser] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  if (!manageUsers) return <Navigate to="/dashboard" replace />;
+  if (!can("users:read")) return <Navigate to="/dashboard" replace />;
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();

@@ -14,19 +14,19 @@ import { useAuthStore } from "@/store/authStore";
 import { usePermissions } from "@/hooks/usePermissions";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, requireManageUsers: false },
-  { to: "/vehicles", label: "Vehículos", icon: Car, requireManageUsers: false },
-  { to: "/customers", label: "Clientes", icon: Users, requireManageUsers: false },
-  { to: "/rentals", label: "Alquileres", icon: FileText, requireManageUsers: false },
-  { to: "/payments", label: "Pagos", icon: CreditCard, requireManageUsers: false },
-  { to: "/users", label: "Usuarios", icon: UserCog, requireManageUsers: true },
-  { to: "/roles", label: "Roles y Permisos", icon: KeyRound, requireManageUsers: true },
+  { to: "/dashboard", label: "Dashboard",         icon: LayoutDashboard, permission: null },
+  { to: "/vehicles",  label: "Vehículos",          icon: Car,             permission: "vehicles:read" },
+  { to: "/customers", label: "Clientes",           icon: Users,           permission: "clients:read" },
+  { to: "/rentals",   label: "Alquileres",         icon: FileText,        permission: "rentals:read" },
+  { to: "/payments",  label: "Pagos",              icon: CreditCard,      permission: "payments:read" },
+  { to: "/users",     label: "Usuarios",           icon: UserCog,         permission: "users:read" },
+  { to: "/roles",     label: "Roles y Permisos",   icon: KeyRound,        permission: "roles:manage" },
 ];
 
 export default function Sidebar() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
-  const { manageUsers, role } = usePermissions();
+  const { can, role } = usePermissions();
 
   const handleLogout = () => {
     const slug = localStorage.getItem("lastSlug");
@@ -43,22 +43,24 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {navItems.filter((item) => !item.requireManageUsers || manageUsers).map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              }`
-            }
-          >
-            <Icon size={18} />
-            {label}
-          </NavLink>
-        ))}
+        {navItems
+          .filter(({ permission }) => !permission || can(permission))
+          .map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                }`
+              }
+            >
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
       </nav>
 
       {role === "SuperAdmin" && (

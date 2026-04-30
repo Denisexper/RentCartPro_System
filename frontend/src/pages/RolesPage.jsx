@@ -53,14 +53,14 @@ function TableSkeleton() {
 
 export default function RolesPage() {
   const { roles, loading, error, refetch } = useRoles();
-  const { manageUsers } = usePermissions();
+  const { can } = usePermissions();
   const [search, setSearch] = useState("");
   const [editRole, setEditRole] = useState(null);
   const [deleteRole, setDeleteRole] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [permRole, setPermRole] = useState(null); // { id, name, type: "base"|"custom" }
 
-  if (!manageUsers) return <Navigate to="/dashboard" replace />;
+  if (!can("roles:manage")) return <Navigate to="/dashboard" replace />;
 
   const filtered = roles.filter((r) => {
     const q = search.toLowerCase();

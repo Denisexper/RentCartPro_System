@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { usePermissionsStore } from "./permissionsStore";
 
 export const useAuthStore = create(
   persist(
@@ -17,12 +18,14 @@ export const useAuthStore = create(
 
       logout: () => {
         localStorage.removeItem("token");
+        usePermissionsStore.getState().reset();
         set({ token: null, user: null, savedSASession: null });
       },
 
       impersonate: (token, user) => {
         const { token: currentToken, user: currentUser } = get();
         localStorage.setItem("token", token);
+        usePermissionsStore.getState().reset();
         set({
           token,
           user,
@@ -34,6 +37,7 @@ export const useAuthStore = create(
         const { savedSASession } = get();
         if (!savedSASession) return;
         localStorage.setItem("token", savedSASession.token);
+        usePermissionsStore.getState().reset();
         set({ token: savedSASession.token, user: savedSASession.user, savedSASession: null });
       },
     }),

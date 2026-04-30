@@ -69,7 +69,7 @@ function TableSkeleton() {
 
 export default function RentalsPage() {
   const { rentals, loading, error, refetch } = useRentals();
-  const { write } = usePermissions();
+  const { can } = usePermissions();
   const [search, setSearch] = useState("");
   const [returnRental, setReturnRental] = useState(null);
   const [returnOpen, setReturnOpen] = useState(false);
@@ -138,7 +138,7 @@ export default function RentalsPage() {
           <h1 className="text-xl font-semibold">Alquileres</h1>
           <p className="text-sm text-muted-foreground">Historial de alquileres del rentcar</p>
         </div>
-        {write && <RentalFormModal onSuccess={refetch} />}
+        {can("rentals:create") && <RentalFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export default function RentalsPage() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                      {write && r.status === "Active" && (
+                      {can("rentals:update") && r.status === "Active" && (
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => openReturn(r)}

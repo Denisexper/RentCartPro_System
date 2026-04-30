@@ -35,7 +35,7 @@ function TableSkeleton() {
 
 export default function VehiclesPage() {
   const { vehicles, loading, error, refetch } = useVehicles();
-  const { manageVehicles } = usePermissions();
+  const { can } = usePermissions();
   const [search, setSearch] = useState("");
   const [editVehicle, setEditVehicle] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -69,7 +69,7 @@ export default function VehiclesPage() {
           <h1 className="text-xl font-semibold">Vehículos</h1>
           <p className="text-sm text-muted-foreground">Gestión de la flota</p>
         </div>
-        {manageVehicles && <VehicleFormModal onSuccess={refetch} />}
+        {can("vehicles:create") && <VehicleFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function VehiclesPage() {
                     <VehicleStatusBadge status={v.status} />
                   </td>
                   <td className="px-4 py-3">
-                    {manageVehicles && (
+                    {(can("vehicles:update") || can("vehicles:delete")) && (
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"

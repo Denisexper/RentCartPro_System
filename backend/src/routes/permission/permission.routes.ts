@@ -13,6 +13,13 @@ export class PermissionRoutes {
   }
 
   initRoutes() {
+    // Permisos del usuario autenticado
+    this.router.get(
+      "/me",
+      authMiddleware,
+      (req: Request, res: Response) => this.controller.getMyPermissions(req, res)
+    );
+
     // Catálogo completo de permisos
     this.router.get(
       "/",

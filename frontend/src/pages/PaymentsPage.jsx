@@ -67,7 +67,7 @@ function TableSkeleton() {
 
 export default function PaymentsPage() {
   const { payments, loading, error, refetch } = usePayments();
-  const { write } = usePermissions();
+  const { can } = usePermissions();
   const [search, setSearch] = useState("");
   const [deletePayment, setDeletePayment] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -102,7 +102,7 @@ export default function PaymentsPage() {
           <h1 className="text-xl font-semibold">Pagos</h1>
           <p className="text-sm text-muted-foreground">Registro de pagos del rentcar</p>
         </div>
-        {write && <PaymentFormModal onSuccess={refetch} />}
+        {can("payments:create") && <PaymentFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">

@@ -50,7 +50,7 @@ function TableSkeleton() {
 
 export default function CustomersPage() {
   const { clients, loading, error, refetch } = useClients();
-  const { write } = usePermissions();
+  const { can } = usePermissions();
   const [search, setSearch] = useState("");
 
   const [editClient, setEditClient] = useState(null);
@@ -96,7 +96,7 @@ export default function CustomersPage() {
           <h1 className="text-xl font-semibold">Clientes</h1>
           <p className="text-sm text-muted-foreground">Gestión de clientes del rentcar</p>
         </div>
-        {write && <CustomerFormModal onSuccess={refetch} />}
+        {can("clients:create") && <CustomerFormModal onSuccess={refetch} />}
       </div>
 
       <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export default function CustomersPage() {
                     <BlacklistedBadge value={c.blacklisted} />
                   </td>
                   <td className="px-4 py-3">
-                    {write && (
+                    {(can("clients:update") || can("clients:delete")) && (
                       <div className="flex items-center gap-1 justify-end">
                         <button
                           onClick={() => openEdit(c)}

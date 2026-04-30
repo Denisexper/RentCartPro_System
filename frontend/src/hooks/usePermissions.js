@@ -1,14 +1,29 @@
+import { useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
-
-const PERMISSIONS = {
-  SuperAdmin: { manageUsers: true, manageVehicles: true, write: true },
-  Admin:      { manageUsers: true, manageVehicles: true, write: true },
-  Operator:   { manageUsers: false, manageVehicles: false, write: true },
-  Auditor:    { manageUsers: false, manageVehicles: false, write: false },
-};
+import { usePermissionsStore } from "../store/permissionsStore";
 
 export function usePermissions() {
-  const role = useAuthStore((s) => s.user?.role);
-  const perms = PERMISSIONS[role] ?? { manageUsers: false, manageVehicles: false, write: false };
-  return { role, ...perms };
+  const user = useAuthStore((s) => s.user);
+  const { keys, loaded, load, can: storeCan } = usePermissionsStore();
+
+  useEffect(() => {
+    if (user && !loaded) load();
+  }, [user, loaded, load]);
+
+  const isSuperAdmin = user?.role === "SuperAdmin";
+
+  function can(key) {
+    if (isSuperAdmin) return true;
+    return storeCan(key);
+  }
+
+  return {
+    role: user?.role,
+    loaded,
+    can,
+    // Flags de compatibilidad con código existente
+    manageUsers:    can("users:read"),
+    manageVehicles: can("vehicles:create"),
+    write:          can("rentals:create") || can("clients:create") || can("payments:create"),
+  };
 }
