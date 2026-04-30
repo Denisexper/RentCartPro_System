@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, ShieldCheck } from "lucide-react";
+import { Pencil, Trash2, ShieldCheck, KeyRound } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useRoles } from "../hooks/useRoles";
@@ -7,6 +7,7 @@ import { usePermissions } from "../hooks/usePermissions";
 import { roleService } from "../services/role.service";
 import { RoleFormModal } from "../components/roles/RoleFormModal";
 import { RoleEditModal } from "../components/roles/RoleEditModal";
+import { RolePermissionsModal } from "../components/roles/RolePermissionsModal";
 import {
   AlertDialogRoot,
   AlertDialogContent,
@@ -57,6 +58,7 @@ export default function RolesPage() {
   const [editRole, setEditRole] = useState(null);
   const [deleteRole, setDeleteRole] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [permRole, setPermRole] = useState(null); // { id, name, type: "base"|"custom" }
 
   if (!manageUsers) return <Navigate to="/dashboard" replace />;
 
@@ -121,7 +123,17 @@ export default function RolesPage() {
                       Sistema
                     </span>
                   </td>
-                  <td className="px-4 py-3" />
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end">
+                      <button
+                        onClick={() => setPermRole({ id: r.name, name: r.name, type: "base" })}
+                        className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        title="Gestionar permisos"
+                      >
+                        <KeyRound className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -186,6 +198,13 @@ export default function RolesPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
+                          onClick={() => setPermRole({ id: r.id, name: r.name, type: "custom" })}
+                          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          title="Gestionar permisos"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={() => setEditRole(r)}
                           className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                           title="Editar rol"
@@ -214,6 +233,14 @@ export default function RolesPage() {
           </p>
         )}
       </div>
+
+      <RolePermissionsModal
+        open={!!permRole}
+        onOpenChange={(v) => { if (!v) setPermRole(null); }}
+        roleType={permRole?.type}
+        roleId={permRole?.id}
+        roleName={permRole?.name}
+      />
 
       <RoleEditModal
         role={editRole}
