@@ -7,6 +7,7 @@ import {
   CreditCard,
   UserCog,
   ShieldCheck,
+  KeyRound,
   LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -19,6 +20,7 @@ const navItems = [
   { to: "/rentals", label: "Alquileres", icon: FileText, requireManageUsers: false },
   { to: "/payments", label: "Pagos", icon: CreditCard, requireManageUsers: false },
   { to: "/users", label: "Usuarios", icon: UserCog, requireManageUsers: true },
+  { to: "/roles", label: "Roles y Permisos", icon: KeyRound, requireManageUsers: true },
 ];
 
 export default function Sidebar() {

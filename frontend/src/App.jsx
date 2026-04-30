@@ -10,6 +10,7 @@ import CustomersPage from "@/pages/CustomersPage";
 import RentalsPage from "@/pages/RentalsPage";
 import PaymentsPage from "@/pages/PaymentsPage";
 import UsersPage from "@/pages/UsersPage";
+import RolesPage from "@/pages/RolesPage";
 import SuperAdminDashboard from "@/pages/superadmin/SuperAdminDashboard";
 import SATenantsPage from "@/pages/superadmin/SATenantsPage";
 import SAVehiclesPage from "@/pages/superadmin/SAVehiclesPage";
@@ -55,6 +56,7 @@ function App() {
           <Route path="/rentals"   element={<RentalsPage />} />
           <Route path="/payments"  element={<PaymentsPage />} />
           <Route path="/users"     element={<UsersPage />} />
+          <Route path="/roles"     element={<RolesPage />} />
           <Route index element={<Navigate to="/dashboard" replace />} />
         </Route>
 
