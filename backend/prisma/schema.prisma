@@ -16,11 +16,12 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users       User[]
-  vehicles    Vehicle[]
-  clients     Client[]
-  rentals     Rental[]
-  customRoles CustomRole[]
+  users           User[]
+  vehicles        Vehicle[]
+  clients         Client[]
+  rentals         Rental[]
+  customRoles     CustomRole[]
+  rolePermissions RolePermission[]
 }
 
 // ── USER ─────────
@@ -150,14 +151,17 @@ model Permission {
   customRolePermissions CustomRolePermission[]
 }
 
-// ── ROLE PERMISSION (roles base del enum) ─────────────────────────────
+// ── ROLE PERMISSION (roles base del enum, por tenant) ─────────────────
 model RolePermission {
   id           String     @id @default(cuid())
+  tenantId     String
   role         Role
   permissionId String
+
+  tenant       Tenant     @relation(fields: [tenantId], references: [id])
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
-  @@unique([role, permissionId])
+  @@unique([tenantId, role, permissionId])
 }
 
 // ── CUSTOM ROLE (roles personalizados por tenant) ──────────────────────

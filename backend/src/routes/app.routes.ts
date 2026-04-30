@@ -44,6 +44,11 @@ import { CustomRoleRepository } from "../repositories/role/role.repository";
 import { CustomRoleControllerService } from "../controllers/role/role.controller.service";
 import { CustomRoleRoutes } from "./role/role.routes";
 
+//importaciones modulo permissions
+import { PermissionRepository } from "../repositories/permission/permission.repository";
+import { PermissionControllerService } from "../controllers/permission/permission.controller.service";
+import { PermissionRoutes } from "./permission/permission.routes";
+
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
@@ -90,10 +95,16 @@ export class AppRoutes {
     const customRoleCtrl = new CustomRoleControllerService(customRoleRepo)
     const customRoleRoutes = new CustomRoleRoutes(Router(), customRoleCtrl)
 
+    // --- configuracion Modulo Permissions ---
+    const permissionRepo = new PermissionRepository(prisma)
+    const permissionCtrl = new PermissionControllerService(permissionRepo)
+    const permissionRoutes = new PermissionRoutes(Router(), permissionCtrl)
+
     // --- Definición de Prefijos de Ruta ---
     router.use("/auth", authRoutes.initRoutes());
     router.use("/clients", clientRoutes.initRoutes());
     router.use("/payments", paymentRoutes.initRoutes());
+    router.use("/permissions", permissionRoutes.initRoutes());
     router.use("/rentals", rentalRoutes.initRoutes());
     router.use("/roles", customRoleRoutes.initRoutes());
     router.use("/tenants", tenantRoutes.initRoutes());

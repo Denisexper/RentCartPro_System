@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { TenantRepositoryInterface } from "../../interfaces/tenant/tenant.repository.interface";
+import { seedTenantDefaultPermissions } from "../../permissions/sync";
 import {
   UpdateTenantInput,
   CreateTenantWithAdminInput,
@@ -132,6 +133,8 @@ export class TenantControllerService {
         { name, slug, plan: plan ?? 'Basic', active: true },
         { name: adminName, email: adminEmail, password: hashedPassword }
       );
+
+      await seedTenantDefaultPermissions(tenant.id);
 
       return res.status(201).json({
         msj: "Empresa creada exitosamente",
