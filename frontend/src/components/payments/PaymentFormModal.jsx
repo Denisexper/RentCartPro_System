@@ -73,7 +73,7 @@ export function PaymentFormModal({ onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const { can } = usePermissions();
-  const { rentals } = useRentals({ skip: !can("rentals:read") });
+  const { rentals } = useRentals({ skip: !can("rentals:read") && !can("payments:create") });
   const activeRentals = rentals.filter((r) => r.status === "Active");
 
   const selectedRental = activeRentals.find((r) => r.id === form.rentalId);

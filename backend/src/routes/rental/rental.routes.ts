@@ -3,7 +3,7 @@ import { RentalControllerService } from "../../controllers/rental/rental.control
 import { RentalPhotoControllerService } from "../../controllers/rental/rental-photo.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
-import { checkPermission } from "../../middlewares/permission.middleware";
+import { checkPermission, checkPermissionAny } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import { uploadPhotos } from "../../middlewares/upload.middleware";
 import { createRentalSchema, updateRentalSchema } from "../../schemas/rental.schema";
@@ -24,7 +24,7 @@ export class RentalRoutes {
       "/",
       authMiddleware,
       tenantMiddleware,
-      checkPermission("rentals:read"),
+      checkPermissionAny("rentals:read", "payments:create", "payments:read"),
       (req: Request, res: Response) => this.controller.getAll(req, res)
     );
     this.router.get(
