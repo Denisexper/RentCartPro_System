@@ -12,9 +12,10 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { userService } from "../../services/user.service";
+import { roleService } from "../../services/role.service";
 
-const ROLES = ["Admin", "Operator", "Auditor"];
-const ROLE_LABELS = { Admin: "Admin", Operator: "Operador", Auditor: "Auditor" };
+const BASE_ROLES = ["Admin", "Operator", "Auditor"];
+const BASE_ROLE_LABELS = { Admin: "Admin", Operator: "Operador", Auditor: "Auditor" };
 
 function Field({ label, children }) {
   return (
@@ -28,6 +29,14 @@ function Field({ label, children }) {
 export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [customRoles, setCustomRoles] = useState([]);
+
+  useEffect(() => {
+    if (!open) return;
+    roleService.getAll()
+      .then((res) => setCustomRoles(res.data.data?.filter((r) => r.active) ?? []))
+      .catch(() => setCustomRoles([]));
+  }, [open]);
 
   useEffect(() => {
     if (user) {
@@ -37,6 +46,7 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
         password: "",
         role: user.role ?? "Operator",
         active: user.active ?? true,
+        customRoleId: user.customRoleId ?? "",
       });
     }
   }, [user]);
@@ -45,16 +55,30 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
+  // Selector unificado: base role o custom role
+  function handleRoleChange(e) {
+    const val = e.target.value;
+    const isBase = BASE_ROLES.includes(val);
+    setForm((prev) => ({
+      ...prev,
+      role: isBase ? val : prev.role,
+      customRoleId: isBase ? "" : val,
+    }));
+  }
+
+  // Valor actual del selector: si hay customRoleId usa ese, sino el role base
+  const selectedRoleValue = form?.customRoleId || form?.role || "Operator";
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     try {
       const payload = {
         name: form.name,
         email: form.email,
         role: form.role,
         active: form.active,
+        customRoleId: form.customRoleId || null,
       };
       if (form.password.trim()) payload.password = form.password;
 
@@ -64,7 +88,11 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
       onSuccess?.();
     } catch (err) {
       const msg = err.response?.data?.msj ?? err.response?.data?.message;
-      toast.error(msg === "Email already in use by another user" ? "Ese email ya está en uso." : (msg ?? "Error al actualizar el usuario."));
+      toast.error(
+        msg === "Email already in use by another user"
+          ? "Ese email ya está en uso."
+          : (msg ?? "Error al actualizar el usuario.")
+      );
     } finally {
       setLoading(false);
     }
@@ -104,13 +132,22 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
           <div className="grid grid-cols-2 gap-3">
             <Field label="Rol">
               <select
-                value={form.role}
-                onChange={set("role")}
+                value={selectedRoleValue}
+                onChange={handleRoleChange}
                 className="h-8 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-                ))}
+                <optgroup label="Sistema">
+                  {BASE_ROLES.map((r) => (
+                    <option key={r} value={r}>{BASE_ROLE_LABELS[r]}</option>
+                  ))}
+                </optgroup>
+                {customRoles.length > 0 && (
+                  <optgroup label="Personalizados">
+                    {customRoles.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </Field>
 
@@ -126,6 +163,12 @@ export function UserEditModal({ user, open, onOpenChange, onSuccess }) {
               </label>
             </Field>
           </div>
+
+          {form.customRoleId && (
+            <p className="text-xs text-muted-foreground">
+              Los permisos de este usuario serán los del rol personalizado seleccionado.
+            </p>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <DialogClose asChild>

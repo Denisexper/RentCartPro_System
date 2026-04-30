@@ -11,6 +11,7 @@ export const createUserSchema = z.object({
 
 export const updateUserSchema = createUserSchema
   .partial()
+  .extend({ customRoleId: z.string().nullable().optional() })
   .refine((data) => Object.keys(data).length > 0, {
     message: "No data provided for update",
   });
