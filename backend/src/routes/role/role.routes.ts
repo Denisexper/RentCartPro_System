@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
 import { CustomRoleControllerService } from "../../controllers/role/role.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
-import { authorizeRoles } from "../../middlewares/role.moddleware";
+import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { checkPermission } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import { createCustomRoleSchema, updateCustomRoleSchema } from "../../schemas/role.schema";
 
@@ -18,37 +19,38 @@ export class CustomRoleRoutes {
     this.router.get(
       "/",
       authMiddleware,
-      authorizeRoles("Admin", "SuperAdmin"),
+      tenantMiddleware,
+      checkPermission("roles:manage"),
       (req: Request, res: Response) => this.controller.getAll(req, res)
     );
-
     this.router.get(
       "/:id",
       authMiddleware,
-      authorizeRoles("Admin", "SuperAdmin"),
+      tenantMiddleware,
+      checkPermission("roles:manage"),
       (req: Request<{ id: string }>, res: Response) => this.controller.getById(req, res)
     );
-
     this.router.post(
       "/",
       authMiddleware,
-      authorizeRoles("Admin", "SuperAdmin"),
+      tenantMiddleware,
+      checkPermission("roles:manage"),
       validate(createCustomRoleSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
-
     this.router.put(
       "/:id",
       authMiddleware,
-      authorizeRoles("Admin", "SuperAdmin"),
+      tenantMiddleware,
+      checkPermission("roles:manage"),
       validate(updateCustomRoleSchema),
       (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
-
     this.router.delete(
       "/:id",
       authMiddleware,
-      authorizeRoles("Admin", "SuperAdmin"),
+      tenantMiddleware,
+      checkPermission("roles:manage"),
       (req: Request<{ id: string }>, res: Response) => this.controller.delete(req, res)
     );
 

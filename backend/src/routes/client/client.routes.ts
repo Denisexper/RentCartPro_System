@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { ClienteControllerService } from "../../controllers/client/client.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
-import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { checkPermission } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import { createClientSchema, updateClientSchema } from "../../schemas/client.schema";
 
@@ -20,21 +20,21 @@ export class ClientRoutes {
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("clients:read"),
       (req: Request, res: Response) => this.ClientController.getAll(req, res)
     );
     this.router.get(
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("clients:read"),
       (req: Request<{ id: string }>, res: Response, next: NextFunction) => this.ClientController.getById(req, res, next)
     );
     this.router.post(
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      checkPermission("clients:create"),
       validate(createClientSchema),
       (req: Request, res: Response) => this.ClientController.create(req, res)
     );
@@ -42,7 +42,7 @@ export class ClientRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      checkPermission("clients:update"),
       validate(updateClientSchema),
       (req: Request<{ id: string }>, res: Response) => this.ClientController.update(req, res)
     );
@@ -50,7 +50,7 @@ export class ClientRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      checkPermission("clients:delete"),
       (req: Request<{ id: string }>, res: Response) => this.ClientController.delete(req, res)
     );
 

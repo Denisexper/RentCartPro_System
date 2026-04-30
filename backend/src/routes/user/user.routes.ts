@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
 import { UserControllerService } from "../../controllers/user/user.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
-import { authorizeRoles } from "../../middlewares/role.moddleware";
+import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { checkPermission } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import { createUserSchema, updateUserSchema } from "../../schemas/user.schema";
 
@@ -18,33 +19,38 @@ export class UserRoutes {
     this.router.get(
       "/",
       authMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      tenantMiddleware,
+      checkPermission("users:read"),
       (req: Request, res: Response) => this.controller.getAll(req, res)
     );
     this.router.get(
       "/:id",
       authMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      tenantMiddleware,
+      checkPermission("users:read"),
       (req: Request<{ id: string }>, res: Response) => this.controller.getById(req, res)
     );
     this.router.post(
       "/",
       authMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      tenantMiddleware,
+      checkPermission("users:create"),
       validate(createUserSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
     this.router.put(
       "/:id",
       authMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      tenantMiddleware,
+      checkPermission("users:update"),
       validate(updateUserSchema),
       (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
     this.router.delete(
       "/:id",
       authMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      tenantMiddleware,
+      checkPermission("users:delete"),
       (req: Request<{ id: string }>, res: Response) => this.controller.delete(req, res)
     );
 

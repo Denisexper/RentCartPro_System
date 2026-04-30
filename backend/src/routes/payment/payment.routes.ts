@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
 import { PaymentControllerService } from "../../controllers/payment/payment.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
-import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { checkPermission } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import { createPaymentSchema, updatePaymentSchema } from "../../schemas/payment.schema";
 
@@ -20,21 +20,21 @@ export class PaymentRoutes {
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("payments:read"),
       (req: Request, res: Response) => this.controller.getAll(req, res)
     );
     this.router.get(
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("payments:read"),
       (req: Request<{ id: string }>, res: Response) => this.controller.getById(req, res)
     );
     this.router.post(
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      checkPermission("payments:create"),
       validate(createPaymentSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
@@ -42,7 +42,7 @@ export class PaymentRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      checkPermission("payments:update"),
       validate(updatePaymentSchema),
       (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
@@ -50,7 +50,7 @@ export class PaymentRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      checkPermission("payments:delete"),
       (req: Request<{ id: string }>, res: Response) => this.controller.delete(req, res)
     );
 

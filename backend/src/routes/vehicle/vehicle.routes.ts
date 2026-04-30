@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
 import { VehicleControllerService } from "../../controllers/vehicle/vehicle.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
-import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { checkPermission } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import { createVehicleSchema, updateVehicleSchema } from "../../schemas/vehicle.schema";
 
@@ -20,21 +20,21 @@ export class VehicleRoutes {
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("vehicles:read"),
       (req: Request<{}, {}, {}, { tenantId: string }>, res: Response) => this.controller.getAll(req, res)
     );
     this.router.get(
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("vehicles:read"),
       (req: Request<{ id: string }>, res: Response) => this.controller.getById(req, res)
     );
     this.router.post(
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      checkPermission("vehicles:create"),
       validate(createVehicleSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
@@ -42,7 +42,7 @@ export class VehicleRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      checkPermission("vehicles:update"),
       validate(updateVehicleSchema),
       (req: Request<{ id: string }, {}, {}, { tenantId: string }>, res: Response) => this.controller.update(req, res)
     );
@@ -50,7 +50,7 @@ export class VehicleRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      checkPermission("vehicles:delete"),
       (req: Request<{ id: string }, {}, {}, { tenantId: string }>, res: Response) => this.controller.delete(req, res)
     );
 

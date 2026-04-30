@@ -2,8 +2,8 @@ import { Router, Request, Response, NextFunction } from "express";
 import { RentalControllerService } from "../../controllers/rental/rental.controller.service";
 import { RentalPhotoControllerService } from "../../controllers/rental/rental-photo.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
-import { authorizeRoles } from "../../middlewares/role.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
+import { checkPermission } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
 import { uploadPhotos } from "../../middlewares/upload.middleware";
 import { createRentalSchema, updateRentalSchema } from "../../schemas/rental.schema";
@@ -24,21 +24,21 @@ export class RentalRoutes {
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("rentals:read"),
       (req: Request, res: Response) => this.controller.getAll(req, res)
     );
     this.router.get(
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("rentals:read"),
       (req: Request<{ id: string }>, res: Response) => this.controller.getById(req, res)
     );
     this.router.post(
       "/",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      checkPermission("rentals:create"),
       validate(createRentalSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
     );
@@ -46,7 +46,7 @@ export class RentalRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      checkPermission("rentals:update"),
       validate(updateRentalSchema),
       (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
@@ -54,14 +54,14 @@ export class RentalRoutes {
       "/:id",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      checkPermission("rentals:delete"),
       (req: Request<{ id: string }>, res: Response) => this.controller.delete(req, res)
     );
     this.router.delete(
       "/:id/force",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin"),
+      checkPermission("rentals:delete"),
       (req: Request<{ id: string }>, res: Response) => this.controller.forceDelete(req, res)
     );
 
@@ -70,7 +70,7 @@ export class RentalRoutes {
       "/:id/photos",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator"),
+      checkPermission("rentals:update"),
       (req: Request, res: Response, next: NextFunction) => uploadPhotos(req, res, next),
       (req: Request<{ id: string }>, res: Response, next: NextFunction) => this.photoController.upload(req, res, next)
     );
@@ -78,7 +78,7 @@ export class RentalRoutes {
       "/:id/photos",
       authMiddleware,
       tenantMiddleware,
-      authorizeRoles("SuperAdmin", "Admin", "Operator", "Auditor"),
+      checkPermission("rentals:read"),
       (req: Request<{ id: string }>, res: Response, next: NextFunction) => this.photoController.list(req, res, next)
     );
 
