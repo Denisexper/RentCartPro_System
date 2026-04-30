@@ -16,10 +16,11 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users     User[]
-  vehicles  Vehicle[]
-  clients   Client[]
-  rentals   Rental[]
+  users       User[]
+  vehicles    Vehicle[]
+  clients     Client[]
+  rentals     Rental[]
+  customRoles CustomRole[]
 }
 
 // ── USER ─────────
@@ -33,6 +34,9 @@ model User {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  customRoleId String?
+  customRole   CustomRole? @relation(fields: [customRoleId], references: [id])
 
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
   rentals   Rental[]
@@ -132,6 +136,56 @@ model RentalPhoto {
   takenAt   DateTime  @default(now())
 
   rental    Rental    @relation(fields: [rentalId], references: [id])
+}
+
+// ── PERMISSION ────────────────────────────────────────────────────────
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  module      String
+  action      String
+  description String?
+
+  rolePermissions       RolePermission[]
+  customRolePermissions CustomRolePermission[]
+}
+
+// ── ROLE PERMISSION (roles base del enum) ─────────────────────────────
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+}
+
+// ── CUSTOM ROLE (roles personalizados por tenant) ──────────────────────
+model CustomRole {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id])
+  users       User[]
+  permissions CustomRolePermission[]
+
+  @@unique([tenantId, name])
+}
+
+// ── CUSTOM ROLE PERMISSION ─────────────────────────────────────────────
+model CustomRolePermission {
+  id           String     @id @default(cuid())
+  customRoleId String
+  permissionId String
+  customRole   CustomRole @relation(fields: [customRoleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([customRoleId, permissionId])
 }
 
 // ── PAYMENT ──────────
