@@ -4,7 +4,7 @@ import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
 import { checkPermission } from "../../middlewares/permission.middleware";
 import { validate } from "../../middlewares/validate.middleware";
-import { createPaymentSchema, updatePaymentSchema } from "../../schemas/payment.schema";
+import { createPaymentSchema } from "../../schemas/payment.schema";
 
 export class PaymentRoutes {
   private router: Router;
@@ -37,14 +37,6 @@ export class PaymentRoutes {
       checkPermission("payments:create"),
       validate(createPaymentSchema),
       (req: Request, res: Response) => this.controller.create(req, res)
-    );
-    this.router.put(
-      "/:id",
-      authMiddleware,
-      tenantMiddleware,
-      checkPermission("payments:update"),
-      validate(updatePaymentSchema),
-      (req: Request<{ id: string }>, res: Response) => this.controller.update(req, res)
     );
     this.router.delete(
       "/:id",

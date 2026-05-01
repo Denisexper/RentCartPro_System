@@ -1,9 +1,6 @@
 import { PaymentRepositoryInterface } from "../../interfaces/payment/payment.repository.interface";
 import { Request, Response } from "express";
-import {
-  CreatePaymentInput,
-  UpdatePaymentInput,
-} from "../../types/payment/payment.types";
+import { CreatePaymentInput } from "../../types/payment/payment.types";
 
 export class PaymentControllerService {
   constructor(private readonly repository: PaymentRepositoryInterface) {}
@@ -75,47 +72,6 @@ export class PaymentControllerService {
       });
     } catch (error: any) {
       console.error("[PaymentController] Error en create():", error);
-      return res.status(500).json({
-        msj: "Server error",
-        error: error.message,
-      });
-    }
-  }
-
-  async update(req: Request<{ id: string }>, res: Response) {
-    const { id } = req.params;
-
-    const data: UpdatePaymentInput = req.body;
-    try {
-      const paymentExist = await this.repository.getById(id);
-
-      if (!paymentExist) {
-        return res.status(404).json({
-          msj: "Payment not found",
-        });
-      }
-
-      const response = await this.repository.update(id, data);
-
-      return res.status(200).json({
-        msj: "Payment updated successfully",
-        data: {
-          id: response.id,
-          rentalId: response.rentalId,
-          amount: response.amount.toString(),
-          method: response.method,
-          notes: response.notes,
-        },
-      });
-    } catch (error: any) {
-      //si prisma devuelve P2025 es que el registro no existe
-      if (error.code === "P2025") {
-        return res.status(404).json({ msj: "Payment not found" });
-      }
-      //para errores de conexion o otros
-      console.error(`[PaymentController] Error en update(${id}):`, error);
-
-      //para errores generales o desconocidos
       return res.status(500).json({
         msj: "Server error",
         error: error.message,

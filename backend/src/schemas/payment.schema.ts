@@ -9,8 +9,3 @@ export const createPaymentSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
-export const updatePaymentSchema = createPaymentSchema
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "No data provided for update",
-  });

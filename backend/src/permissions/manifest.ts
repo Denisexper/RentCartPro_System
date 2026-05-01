@@ -17,7 +17,6 @@ export const PERMISSIONS = {
   // Pagos
   PAYMENTS_READ:   { key: "payments:read",   module: "Pagos", action: "Ver",      description: "Ver listado de pagos" },
   PAYMENTS_CREATE: { key: "payments:create", module: "Pagos", action: "Crear",    description: "Registrar nuevos pagos" },
-  PAYMENTS_UPDATE: { key: "payments:update", module: "Pagos", action: "Editar",   description: "Editar pagos existentes" },
   PAYMENTS_DELETE: { key: "payments:delete", module: "Pagos", action: "Eliminar", description: "Eliminar pagos" },
   // Usuarios
   USERS_READ:   { key: "users:read",   module: "Usuarios", action: "Ver",      description: "Ver listado de usuarios" },
@@ -37,7 +36,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
     "vehicles:read",
     "clients:read", "clients:create", "clients:update",
     "rentals:read",  "rentals:create",  "rentals:update",
-    "payments:read", "payments:create", "payments:update",
+    "payments:read", "payments:create",
   ],
   Auditor: [
     "vehicles:read",
