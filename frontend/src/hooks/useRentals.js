@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { rentalService } from "../services/rental.service";
 
-export function useRentals({ skip = false } = {}) {
+export function useRentals({ skip = false, status } = {}) {
   const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(!skip);
   const [error, setError] = useState(null);
@@ -10,7 +10,7 @@ export function useRentals({ skip = false } = {}) {
     setLoading(true);
     setError(null);
     try {
-      const res = await rentalService.getAll();
+      const res = await rentalService.getAll(status);
       setRentals(res.data.data ?? res.data);
     } catch (err) {
       setError(err.response?.data?.message ?? "Error al cargar alquileres");

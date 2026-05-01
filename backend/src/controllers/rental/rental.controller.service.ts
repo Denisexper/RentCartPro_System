@@ -21,8 +21,11 @@ export class RentalControllerService {
     const tenantId = isSuperAdmin
       ? (req.user!.tenantId ?? (req.query.tenantId as string | undefined))
       : req.user!.tenantId;
+    const status = req.query.status as string | undefined;
+    const VALID_STATUSES = ["Active", "Reserved", "Completed", "Cancelled"];
+    const statusFilter = status && VALID_STATUSES.includes(status) ? status : undefined;
     try {
-      const rentals = await this.repository.getAll(tenantId);
+      const rentals = await this.repository.getAll(tenantId, statusFilter);
       return res.status(200).json({
         msj: rentals.length > 0 ? "Rentals retrieved successfully" : "No rentals found",
         data: rentals,

@@ -7,7 +7,7 @@ import type {
 
 export interface RentalRepositoryInterface {
   getById(id: string): Promise<Rental | null>;
-  getAll(tenantId?: string): Promise<Rental[]>;
+  getAll(tenantId?: string, status?: string): Promise<Rental[]>;
   create(data: CreateRentalInput): Promise<Rental>;
   update(id: string, data: UpdateRentalInput): Promise<Rental>;
   delete(id: string): Promise<Rental>;
