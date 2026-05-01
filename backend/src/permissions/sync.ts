@@ -4,8 +4,8 @@ import { DEFAULT_ROLE_PERMISSIONS, PERMISSIONS } from "./manifest";
 
 export async function syncPermissions(): Promise<void> {
   const allPerms = Object.values(PERMISSIONS);
+  const validKeys = allPerms.map((p) => p.key);
 
-  // Upsert cada permiso del manifest en la tabla Permission
   for (const perm of allPerms) {
     await prisma.permission.upsert({
       where: { key: perm.key },
@@ -13,6 +13,11 @@ export async function syncPermissions(): Promise<void> {
       create: perm,
     });
   }
+
+  // Eliminar permisos que ya no existen en el manifest
+  await prisma.permission.deleteMany({
+    where: { key: { notIn: validKeys } },
+  });
 
   console.log(`[Permissions] ${allPerms.length} permissions synced`);
 }
