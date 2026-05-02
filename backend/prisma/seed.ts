@@ -26,11 +26,11 @@ async function main() {
   const superAdminPassword = await bcrypt.hash("superadmin123", 10);
   const superAdmin = await prisma.user.upsert({
     where: { email: "superadmin@rentcarpro.com" },
-    update: { tenantId: tenant.id, role: "SuperAdmin", active: true },
+    update: { email: "superadmin@drivly.com", tenantId: tenant.id, role: "SuperAdmin", active: true },
     create: {
       tenantId: tenant.id,
       name: "Super Admin",
-      email: "superadmin@rentcarpro.com",
+      email: "superadmin@drivly.com",
       password: superAdminPassword,
       role: "SuperAdmin",
       active: true,
@@ -158,7 +158,7 @@ async function main() {
 
   console.log("\n🎉 Seed completado. Credenciales de prueba:");
   console.log("──────────────────────────────────────────");
-  console.log("  SuperAdmin → superadmin@rentcarpro.com  / superadmin123");
+  console.log("  SuperAdmin → superadmin@drivly.com      / superadmin123");
   console.log("  Admin      → admin@demo-rentcar.com     / admin123");
   console.log("  Operador   → operador@demo-rentcar.com  / operator123");
   console.log("──────────────────────────────────────────");
