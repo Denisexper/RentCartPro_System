@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Car, Building2, ArrowRight } from "lucide-react";
+import { Building2, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -34,15 +34,10 @@ export default function WelcomePage() {
 
         <div className="relative z-10 text-center text-white space-y-8 max-w-sm">
           <div className="flex justify-center">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5">
-              <Car className="w-14 h-14 text-white" />
-            </div>
+            <img src="/saas_rounded_icon.png" alt="Drivly" className="w-24 h-24" />
           </div>
           <div className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-tight">Drivly</h1>
-            <p className="text-blue-200 text-lg leading-relaxed">
-              Plataforma administrativa para la gestión profesional de tu flota
-            </p>
+            <p className="text-blue-200 text-lg leading-relaxed">Less admin. More road.</p>
           </div>
         </div>
 
@@ -56,9 +51,7 @@ export default function WelcomePage() {
         <div className="w-full max-w-md space-y-8">
 
           <div className="flex lg:hidden justify-center">
-            <div className="bg-blue-600 rounded-xl p-3">
-              <Car className="w-8 h-8 text-white" />
-            </div>
+            <img src="/saas_rounded_icon.png" alt="Drivly" className="w-16 h-16" />
           </div>
 
           <div className="space-y-2">

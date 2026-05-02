@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { tenantService } from "@/services/tenant.service";
 import api from "@/services/api";
-import { Car, Mail, Lock, ShieldCheck, Building2 } from "lucide-react";
+import { Mail, Lock, ShieldCheck, Building2 } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -79,12 +79,10 @@ export default function LoginPage() {
 
         <div className="relative z-10 text-center text-white space-y-8 max-w-sm">
           <div className="flex justify-center">
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5">
-              <Car className="w-14 h-14 text-white" />
-            </div>
+            <img src="/saas_rounded_icon.png" alt="Drivly" className="w-24 h-24" />
           </div>
           <div className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-tight">Drivly</h1>
+            <p className="text-lg leading-relaxed" style={{ color: isSuperAdmin ? "#c4b5fd" : "#bfdbfe" }}>Less admin. More road.</p>
             <p className="text-lg leading-relaxed" style={{ color: isSuperAdmin ? "#c4b5fd" : "#bfdbfe" }}>
               {isSuperAdmin
                 ? "Panel de administración global del sistema"
@@ -113,9 +111,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
 
           <div className="flex lg:hidden justify-center">
-            <div className={`rounded-xl p-3 ${isSuperAdmin ? "bg-purple-600" : "bg-blue-600"}`}>
-              <Car className="w-8 h-8 text-white" />
-            </div>
+            <img src="/saas_rounded_icon.png" alt="Drivly" className="w-16 h-16" />
           </div>
 
           {/* Company badge / SA badge */}
