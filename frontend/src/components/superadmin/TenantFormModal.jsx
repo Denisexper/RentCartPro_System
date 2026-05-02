@@ -116,7 +116,7 @@ export function TenantFormModal({ onSuccess }) {
               <Input
                 value={form.name}
                 onChange={set("name")}
-                placeholder="RentCar García"
+                placeholder="Transportes García"
                 required
               />
             </Field>
@@ -160,7 +160,7 @@ export function TenantFormModal({ onSuccess }) {
                 type="email"
                 value={form.adminEmail}
                 onChange={set("adminEmail")}
-                placeholder="admin@rentcar-garcia.com"
+                placeholder="admin@transportes-garcia.com"
                 required
               />
             </Field>

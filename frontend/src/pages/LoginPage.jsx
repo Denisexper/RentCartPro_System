@@ -84,11 +84,11 @@ export default function LoginPage() {
             </div>
           </div>
           <div className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-tight">RentCar Pro</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Drivly</h1>
             <p className="text-lg leading-relaxed" style={{ color: isSuperAdmin ? "#c4b5fd" : "#bfdbfe" }}>
               {isSuperAdmin
                 ? "Panel de administración global del sistema"
-                : "Sistema administrativo para la gestión profesional de tu rentcar"}
+                : "Plataforma administrativa para la gestión profesional de tu flota"}
             </p>
           </div>
           {!isSuperAdmin && (
@@ -104,7 +104,7 @@ export default function LoginPage() {
         </div>
 
         <p className="absolute bottom-6 text-xs z-10" style={{ color: isSuperAdmin ? "#a78bfa60" : "#93c5fd60" }}>
-          © {new Date().getFullYear()} RentCar Pro · Todos los derechos reservados
+          © {new Date().getFullYear()} Drivly · Todos los derechos reservados
         </p>
       </div>
 

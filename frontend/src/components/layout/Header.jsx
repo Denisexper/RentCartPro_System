@@ -17,7 +17,7 @@ export default function Header() {
   const { isDark, toggleTheme } = useThemeStore();
   const user = useAuthStore((s) => s.user);
 
-  const title = routeTitles[pathname] ?? "RentCar Pro";
+  const title = routeTitles[pathname] ?? "Drivly";
 
   return (
     <header className="h-16 px-6 border-b border-border bg-card flex items-center justify-between">

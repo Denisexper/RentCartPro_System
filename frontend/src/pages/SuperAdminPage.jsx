@@ -74,7 +74,7 @@ export default function SuperAdminPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-semibold">Panel SuperAdmin</h1>
-        <p className="text-sm text-muted-foreground">Vista global de toda la plataforma RentCar Pro</p>
+        <p className="text-sm text-muted-foreground">Vista global de toda la plataforma Drivly</p>
       </div>
 
       {/* Stats globales */}

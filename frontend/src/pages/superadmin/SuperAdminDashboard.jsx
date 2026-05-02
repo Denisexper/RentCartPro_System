@@ -68,7 +68,7 @@ export default function SuperAdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm text-muted-foreground">Vista global de toda la plataforma RentCar Pro</p>
+        <p className="text-sm text-muted-foreground">Vista global de toda la plataforma Drivly</p>
       </div>
 
       {statsError ? (

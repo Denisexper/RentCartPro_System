@@ -38,7 +38,7 @@ export default function Sidebar() {
     <aside className="fixed top-0 left-0 h-full w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-20">
       <div className="px-6 py-5 border-b border-sidebar-border">
         <span className="text-sidebar-primary font-bold text-xl tracking-tight">
-          RentCar Pro
+          Drivly
         </span>
       </div>
 

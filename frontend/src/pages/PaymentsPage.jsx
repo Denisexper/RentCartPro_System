@@ -100,7 +100,7 @@ export default function PaymentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Pagos</h1>
-          <p className="text-sm text-muted-foreground">Registro de pagos del rentcar</p>
+          <p className="text-sm text-muted-foreground">Registro de pagos de la flota</p>
         </div>
         {can("payments:create") && <PaymentFormModal onSuccess={refetch} />}
       </div>

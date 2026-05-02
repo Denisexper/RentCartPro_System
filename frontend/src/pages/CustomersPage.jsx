@@ -94,7 +94,7 @@ export default function CustomersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Clientes</h1>
-          <p className="text-sm text-muted-foreground">Gestión de clientes del rentcar</p>
+          <p className="text-sm text-muted-foreground">Gestión de clientes de la flota</p>
         </div>
         {can("clients:create") && <CustomerFormModal onSuccess={refetch} />}
       </div>

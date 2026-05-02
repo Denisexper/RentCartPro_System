@@ -136,7 +136,7 @@ export default function RentalsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Alquileres</h1>
-          <p className="text-sm text-muted-foreground">Historial de alquileres del rentcar</p>
+          <p className="text-sm text-muted-foreground">Historial de alquileres de la flota</p>
         </div>
         {can("rentals:create") && <RentalFormModal onSuccess={refetch} />}
       </div>
