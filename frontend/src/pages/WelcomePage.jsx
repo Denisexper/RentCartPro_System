@@ -3,15 +3,28 @@ import { useNavigate } from "react-router-dom";
 import { Building2, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { tenantService } from "@/services/tenant.service";
 
 export default function WelcomePage() {
   const navigate = useNavigate();
   const [slug, setSlug] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const clean = slug.trim().toLowerCase();
-    if (clean) navigate(`/login/${clean}`);
+    if (!clean) return;
+    setError(null);
+    setLoading(true);
+    try {
+      await tenantService.getBySlug(clean);
+      navigate(`/login/${clean}`);
+    } catch {
+      setError("Empresa no encontrada. Verifica el nombre e inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -71,7 +84,7 @@ export default function WelcomePage() {
                 <Input
                   placeholder="ej: rentcar-garcia"
                   value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
+                  onChange={(e) => { setSlug(e.target.value); setError(null); }}
                   className="pl-10"
                   required
                   autoFocus
@@ -85,15 +98,28 @@ export default function WelcomePage() {
               )}
             </div>
 
+            {error && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+                <p className="text-sm text-destructive font-medium">{error}</p>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full h-11 text-base font-semibold bg-blue-600 hover:bg-blue-700"
-              disabled={!slug.trim()}
+              disabled={!slug.trim() || loading}
             >
-              <span className="flex items-center gap-2">
-                Ir a mi empresa
-                <ArrowRight className="w-4 h-4" />
-              </span>
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Buscando empresa...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  Ir a mi empresa
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              )}
             </Button>
           </form>
 
