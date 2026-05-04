@@ -25,8 +25,8 @@ async function main() {
   // ── 2. SuperAdmin (dueño del SaaS, no pertenece a ningún tenant real) ──
   const superAdminPassword = await bcrypt.hash("superadmin123", 10);
   const superAdmin = await prisma.user.upsert({
-    where: { email: "superadmin@rentcarpro.com" },
-    update: { email: "superadmin@drivly.com", tenantId: tenant.id, role: "SuperAdmin", active: true },
+    where: { email: "superadmin@drivly.com" },
+    update: { tenantId: tenant.id, role: "SuperAdmin", active: true },
     create: {
       tenantId: tenant.id,
       name: "Super Admin",
@@ -41,12 +41,12 @@ async function main() {
   // ── 3. Admin de la empresa demo ──────────────────────────────────
   const adminPassword = await bcrypt.hash("admin123", 10);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@demo-rentcar.com" },
-    update: { tenantId: tenant.id, role: "Admin", active: true },
+    where: { email: "admin@drivly.com" },
+    update: { email: "admin@drivly.com", tenantId: tenant.id, role: "Admin", active: true },
     create: {
       tenantId: tenant.id,
       name: "Admin Demo",
-      email: "admin@demo-rentcar.com",
+      email: "admin@drivly.com",
       password: adminPassword,
       role: "Admin",
       active: true,
@@ -57,12 +57,12 @@ async function main() {
   // ── 4. Operador de la empresa demo ───────────────────────────────
   const operatorPassword = await bcrypt.hash("operator123", 10);
   const operator = await prisma.user.upsert({
-    where: { email: "operador@demo-rentcar.com" },
-    update: { tenantId: tenant.id, role: "Operator", active: true },
+    where: { email: "operador@drivly.com" },
+    update: { email: "operador@drivly.com", tenantId: tenant.id, role: "Operator", active: true },
     create: {
       tenantId: tenant.id,
       name: "Operador Demo",
-      email: "operador@demo-rentcar.com",
+      email: "operador@drivly.com",
       password: operatorPassword,
       role: "Operator",
       active: true,
@@ -158,9 +158,9 @@ async function main() {
 
   console.log("\n🎉 Seed completado. Credenciales de prueba:");
   console.log("──────────────────────────────────────────");
-  console.log("  SuperAdmin → superadmin@drivly.com      / superadmin123");
-  console.log("  Admin      → admin@demo-rentcar.com     / admin123");
-  console.log("  Operador   → operador@demo-rentcar.com  / operator123");
+  console.log("  SuperAdmin → superadmin@drivly.com  / superadmin123");
+  console.log("  Admin      → admin@drivly.com       / admin123");
+  console.log("  Operador   → operador@drivly.com    / operator123");
   console.log("──────────────────────────────────────────");
 }
 
