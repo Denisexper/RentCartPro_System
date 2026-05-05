@@ -156,9 +156,16 @@ function RentalCard({ group, canDelete, onDelete, onSuccess }) {
           <p className="text-xs text-muted-foreground">{startDate} → {endDate}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0 mt-0.5">
-          {canDelete === false ? null : (
-            <PaymentFormModal rentalId={rentalId} onSuccess={onSuccess} compact />
+          {saldoPendiente > 0 && (
+            <PaymentFormModal
+              rentalId={rentalId}
+              initialAmount={Number(saldoPendiente.toFixed(2))}
+              initialType="PagoAlquiler"
+              triggerLabel={`Completar pago ${fmt(saldoPendiente)}`}
+              onSuccess={onSuccess}
+            />
           )}
+          <PaymentFormModal rentalId={rentalId} onSuccess={onSuccess} compact />
         </div>
       </div>
 

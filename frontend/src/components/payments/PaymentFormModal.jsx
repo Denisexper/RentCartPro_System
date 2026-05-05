@@ -70,9 +70,23 @@ function NativeSelect({ value, onChange, options, labels }) {
   );
 }
 
-export function PaymentFormModal({ onSuccess, rentalId: initialRentalId, compact = false }) {
+export function PaymentFormModal({
+  onSuccess,
+  rentalId: initialRentalId,
+  initialAmount,
+  initialType,
+  compact = false,
+  triggerLabel,
+}) {
+  const buildInitial = () => ({
+    ...INITIAL,
+    rentalId: initialRentalId ?? "",
+    amount: initialAmount != null ? String(initialAmount) : "",
+    type: initialType ?? INITIAL.type,
+  });
+
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ ...INITIAL, rentalId: initialRentalId ?? "" });
+  const [form, setForm] = useState(buildInitial());
   const [loading, setLoading] = useState(false);
 
   const { can } = usePermissions();
@@ -116,7 +130,7 @@ export function PaymentFormModal({ onSuccess, rentalId: initialRentalId, compact
 
   function handleOpenChange(val) {
     setOpen(val);
-    if (!val) setForm({ ...INITIAL, rentalId: initialRentalId ?? "" });
+    if (!val) setForm(buildInitial());
   }
 
   return (
@@ -129,6 +143,10 @@ export function PaymentFormModal({ onSuccess, rentalId: initialRentalId, compact
           >
             <Plus className="h-4 w-4" />
           </button>
+        ) : triggerLabel ? (
+          <Button size="sm" variant="outline" className="text-xs h-7 border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-950">
+            {triggerLabel}
+          </Button>
         ) : (
           <Button>+ Registrar Pago</Button>
         )}
@@ -197,12 +215,18 @@ export function PaymentFormModal({ onSuccess, rentalId: initialRentalId, compact
           </div>
 
           <Field label="Tipo" required>
-            <NativeSelect
-              value={form.type}
-              onChange={setDirect("type")}
-              options={TYPES}
-              labels={TYPE_LABELS}
-            />
+            {initialType ? (
+              <div className="h-8 w-full rounded-lg border border-border bg-muted/40 px-3 text-sm flex items-center text-muted-foreground">
+                {TYPE_LABELS[initialType] ?? initialType}
+              </div>
+            ) : (
+              <NativeSelect
+                value={form.type}
+                onChange={setDirect("type")}
+                options={TYPES}
+                labels={TYPE_LABELS}
+              />
+            )}
           </Field>
 
           <Field label="Referencia">
