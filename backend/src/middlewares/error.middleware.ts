@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import multer from "multer";
 export const ErrorMiddleware = (
   err: any,
   req: Request,
@@ -8,6 +9,19 @@ export const ErrorMiddleware = (
   //log de error desconocido (desarrollador)
   //nombre del error y el mensaje para rapido debug
   console.error(`[Error Handler] ${err.name || "Error"}: ${err.message}`);
+
+  // errores de multer (upload de fotos)
+  if (err instanceof multer.MulterError) {
+    const status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+    const message = err.code === "LIMIT_FILE_SIZE"
+      ? "El archivo supera el tamaño máximo permitido de 10MB"
+      : "Error al procesar el archivo";
+    return res.status(status).json({ ok: false, msj: message });
+  }
+
+  if (err.message === "Solo se permiten imágenes JPG, PNG o WEBP") {
+    return res.status(415).json({ ok: false, msj: err.message });
+  }
 
   //valores por defecto en caso de desconocer el error
   let status = err.status || 500;
