@@ -181,6 +181,45 @@ export default function DailySummaryPage() {
             </div>
           )}
 
+          {/* Movimientos individuales */}
+          {summary.movimientos?.length > 0 && (
+            <div>
+              <h2 className="text-sm font-medium text-muted-foreground mb-2">Movimientos del día</h2>
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/40">
+                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Hora</th>
+                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Tipo</th>
+                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Cliente</th>
+                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Vehículo</th>
+                      <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Método</th>
+                      <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {summary.movimientos.map((m) => (
+                      <tr key={m.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="px-4 py-2.5 text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(m.createdAt).toLocaleTimeString("es-SV", { hour: "2-digit", minute: "2-digit" })}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+                            {TYPE_LABELS[m.type] ?? m.type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5">{m.clientName}</td>
+                        <td className="px-4 py-2.5 font-mono font-semibold text-xs">{m.vehiclePlate}</td>
+                        <td className="px-4 py-2.5 text-muted-foreground">{METHOD_LABELS[m.method] ?? m.method}</td>
+                        <td className="px-4 py-2.5 text-right font-mono font-semibold">{fmt(m.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {summary.totalTransacciones === 0 && (
             <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
               <BarChart2 className="h-8 w-8 mx-auto mb-2 opacity-30" />

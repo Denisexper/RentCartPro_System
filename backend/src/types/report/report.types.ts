@@ -10,12 +10,24 @@ export interface DailySummaryByType {
   count: number
 }
 
+export interface DailyMovement {
+  id: string
+  type: string
+  method: string
+  amount: number
+  notes: string | null
+  createdAt: Date
+  clientName: string
+  vehiclePlate: string
+}
+
 export interface DailySummaryReport {
   date: string
   totalIngresos: number
   totalTransacciones: number
   byMethod: DailySummaryByMethod[]
   byType: DailySummaryByType[]
+  movimientos: DailyMovement[]
 }
 
 export interface ReceivableItem {

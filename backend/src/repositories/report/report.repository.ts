@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import { ReportRepositoryInterface } from "../../interfaces/report/report.repository.interface"
-import { DailySummaryReport, ReceivableItem } from "../../types/report/report.types"
+import { DailyMovement, DailySummaryReport, ReceivableItem } from "../../types/report/report.types"
 
 const RENTAL_PAYMENT_TYPES = ["Deposito", "PagoAlquiler"] as const
 
@@ -16,6 +16,15 @@ export class ReportRepository implements ReportRepositoryInterface {
         createdAt: { gte: start, lte: end },
         ...(tenantId ? { rental: { tenantId } } : {}),
       },
+      include: {
+        rental: {
+          include: {
+            client: { select: { firstName: true, lastName: true } },
+            vehicle: { select: { plate: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
     })
 
     const byMethod = new Map<string, { total: number; count: number }>()
@@ -33,12 +42,24 @@ export class ReportRepository implements ReportRepositoryInterface {
       byType.set(p.type, { total: t.total + amount, count: t.count + 1 })
     }
 
+    const movimientos: DailyMovement[] = pagos.map((p) => ({
+      id: p.id,
+      type: p.type,
+      method: p.method,
+      amount: Number(p.amount),
+      notes: p.notes,
+      createdAt: p.createdAt,
+      clientName: `${p.rental.client.firstName} ${p.rental.client.lastName}`,
+      vehiclePlate: p.rental.vehicle.plate,
+    }))
+
     return {
       date,
       totalIngresos,
       totalTransacciones: pagos.length,
       byMethod: Array.from(byMethod.entries()).map(([method, v]) => ({ method, ...v })),
       byType: Array.from(byType.entries()).map(([type, v]) => ({ type, ...v })),
+      movimientos,
     }
   }
 
