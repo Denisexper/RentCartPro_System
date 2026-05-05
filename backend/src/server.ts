@@ -1,11 +1,28 @@
 import { PORT } from "./services/enviroments.service";
 import express, { Request, Response } from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { AppRoutes } from "./routes/app.routes";
 import { ErrorMiddleware } from "./middlewares/error.middleware";
 import { syncPermissions } from "./permissions/sync";
 
 const app = express();
+
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { msj: "Demasiadas peticiones, intenta en un momento." },
+});
+
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { msj: "Demasiados intentos de login, espera 1 minuto." },
+});
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "*",
@@ -15,6 +32,8 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(globalLimiter);
+app.use("/api/v1/auth/login", loginLimiter);
 
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ msj: "rentCart API funcionando!" });
