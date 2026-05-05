@@ -91,6 +91,7 @@ export class RentalControllerService {
         extraCharges,
         totalAmount,
         deposit: body.deposit ?? 0,
+        depositMethod: body.depositMethod ?? "Cash",
         mileageStart: body.mileageStart ?? vehicle.mileage,
         fuelOut: body.fuelOut ?? "Full",
         status: "Active",

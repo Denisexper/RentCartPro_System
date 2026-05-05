@@ -11,6 +11,7 @@ export type CreateRentalInput = Omit<
   extraCharges: number;
   totalAmount: number;
   deposit: number;
+  depositMethod?: "Cash" | "Card" | "Transfer" | "Check";
 };
 
 export type UpdateRentalInput = Partial<CreateRentalInput>;
@@ -22,6 +23,7 @@ export type CreateRentalBody = {
   startDate: string;
   endDate: string;
   deposit?: number;
+  depositMethod?: "Cash" | "Card" | "Transfer" | "Check";
   discount?: number;
   fuelOut?: FuelLevel;
   mileageStart?: number;

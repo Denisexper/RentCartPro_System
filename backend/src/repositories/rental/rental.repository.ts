@@ -32,13 +32,29 @@ export class RentalRepository implements RentalRepositoryInterface {
   }
 
   async create(data: CreateRentalInput): Promise<Rental> {
-    // Transaccion: crear rental + cambiar vehiculo a Rented atomicamente
+    const { depositMethod, ...rentalData } = data;
+
     return this.prisma.$transaction(async (tx) => {
-      const rental = await tx.rental.create({ data });
+      const rental = await tx.rental.create({ data: rentalData });
+
       await tx.vehicle.update({
         where: { id: data.vehicleId },
         data: { status: "Rented" },
       });
+
+      // Si se registró un depósito al crear el alquiler, crear el pago automáticamente
+      if (Number(data.deposit) > 0) {
+        await tx.payment.create({
+          data: {
+            rentalId: rental.id,
+            amount: data.deposit,
+            method: depositMethod ?? "Cash",
+            type: "Deposito",
+            notes: "Depósito registrado al crear el alquiler",
+          },
+        });
+      }
+
       return rental;
     });
   }

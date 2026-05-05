@@ -27,12 +27,20 @@ const FUEL_LABELS = {
   Empty: "Vacío",
 };
 
+const DEPOSIT_METHODS = [
+  { value: "Cash", label: "Efectivo" },
+  { value: "Card", label: "Tarjeta" },
+  { value: "Transfer", label: "Transferencia" },
+  { value: "Check", label: "Cheque" },
+];
+
 const INITIAL = {
   clientId: "",
   vehicleId: "",
   startDate: "",
   endDate: "",
   deposit: "",
+  depositMethod: "Cash",
   discount: "",
   fuelOut: "Full",
   mileageStart: "",
@@ -119,6 +127,7 @@ export function RentalFormModal({ onSuccess }) {
         startDate: new Date(form.startDate).toISOString(),
         endDate: new Date(form.endDate).toISOString(),
         deposit: form.deposit ? Number(form.deposit) : undefined,
+        depositMethod: form.deposit ? form.depositMethod : undefined,
         discount: form.discount ? Number(form.discount) : undefined,
         fuelOut: form.fuelOut || undefined,
         mileageStart: form.mileageStart ? Number(form.mileageStart) : undefined,
@@ -211,6 +220,15 @@ export function RentalFormModal({ onSuccess }) {
               <Field label="Depósito (USD)">
                 <Input type="number" min={0} step="0.01" value={form.deposit} onChange={set("deposit")} placeholder="0.00" />
               </Field>
+              <Field label="Método depósito">
+                <NativeSelect
+                  value={form.depositMethod}
+                  onChange={(v) => setForm((p) => ({ ...p, depositMethod: v }))}
+                  options={DEPOSIT_METHODS}
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <Field label="Descuento (USD)">
                 <Input type="number" min={0} step="0.01" value={form.discount} onChange={set("discount")} placeholder="0.00" />
               </Field>

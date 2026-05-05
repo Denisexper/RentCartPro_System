@@ -7,6 +7,7 @@ export const createRentalSchema = z
     startDate: z.string().min(1, "startDate is required"),
     endDate: z.string().min(1, "endDate is required"),
     deposit: z.number().min(0).optional(),
+    depositMethod: z.enum(["Cash", "Card", "Transfer", "Check"]).optional(),
     discount: z.number().min(0).optional(),
     fuelOut: z.enum(["Full", "ThreeQuarters", "Half", "Quarter", "Empty"]).optional(),
     mileageStart: z.number().int().min(0).optional(),
