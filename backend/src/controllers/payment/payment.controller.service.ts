@@ -7,29 +7,16 @@ export class PaymentControllerService {
 
   async getById(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
-
     try {
       const response = await this.repository.getById(id);
-
-      if (!response) {
-        return res.status(404).json({
-          msj: "Payment not found",
-        });
-      }
-
+      if (!response) return res.status(404).json({ msj: "Payment not found" });
       return res.status(200).json({
         msj: "Payment retrived successfully",
-        data: {
-          ...response,
-          amount: response.amount.toString(),
-        },
+        data: { ...response, amount: response.amount.toString() },
       });
     } catch (error: any) {
       console.error(`[Payment controller] Error en getById(${id}):`, error);
-      return res.status(500).json({
-        msj: "Server error",
-        error: error.message,
-      });
+      return res.status(500).json({ msj: "Server error", error: error.message });
     }
   }
 
@@ -40,62 +27,47 @@ export class PaymentControllerService {
       : req.user!.tenantId;
     try {
       const response = await this.repository.getAll(tenantId);
-
       return res.status(200).json({
-        msj:
-          response.length > 0
-            ? "Payments retrived successfully"
-            : "Payments list empty",
+        msj: response.length > 0 ? "Payments retrived successfully" : "Payments list empty",
         data: response,
       });
     } catch (error: any) {
       console.error("[PaymentController] Error en getAll():", error);
-      return res.status(500).json({
-        msj: "Server error",
-        error: error.message,
-      });
+      return res.status(500).json({ msj: "Server error", error: error.message });
     }
   }
 
   async create(req: Request, res: Response) {
     const data: CreatePaymentInput = req.body;
-
     try {
       const response = await this.repository.create(data);
-
       return res.status(201).json({
         msj: "Payment created successfully",
         data: {
           id: response.id,
           rentalId: response.rentalId,
-          amount: response.amount,
+          amount: response.amount.toString(),
           method: response.method,
+          type: response.type,
           notes: response.notes,
         },
       });
     } catch (error: any) {
+      // Validation error from repository (exceeds rental total)
+      if (error.message?.includes("El monto excede") || error.message?.includes("Rental not found")) {
+        return res.status(422).json({ msj: error.message });
+      }
       console.error("[PaymentController] Error en create():", error);
-      return res.status(500).json({
-        msj: "Server error",
-        error: error.message,
-      });
+      return res.status(500).json({ msj: "Server error", error: error.message });
     }
   }
 
   async delete(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
-
     try {
       const isExist = await this.repository.getById(id);
-
-      if (!isExist) {
-        return res.status(404).json({
-          msj: "Payment not found",
-        });
-      }
-
+      if (!isExist) return res.status(404).json({ msj: "Payment not found" });
       const response = await this.repository.delete(id);
-
       return res.status(200).json({
         msj: "Payment deleted successfully",
         data: {
@@ -107,18 +79,21 @@ export class PaymentControllerService {
         },
       });
     } catch (error: any) {
-      //si prisma devuelve P2025 es que el registro no existe //Redundancia defenciva
-      if (error.code === "P2025") {
-        return res.status(404).json({ msj: "Payment not found" });
-      }
-      //para errores de conexion o otros
+      if (error.code === "P2025") return res.status(404).json({ msj: "Payment not found" });
       console.error(`[PaymentController] Error en delete(${id}):`, error);
+      return res.status(500).json({ msj: "Server error", error: error.message });
+    }
+  }
 
-      //para errores generales o desconocidos
-      return res.status(500).json({
-        msj: "Server error",
-        error: error.message,
-      });
+  async getPaymentSummary(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+    try {
+      const summary = await this.repository.getPaymentSummary(id);
+      return res.status(200).json({ msj: "Payment summary retrieved", data: summary });
+    } catch (error: any) {
+      if (error.message === "Rental not found") return res.status(404).json({ msj: "Rental not found" });
+      console.error(`[PaymentController] Error en getPaymentSummary(${id}):`, error);
+      return res.status(500).json({ msj: "Server error", error: error.message });
     }
   }
 }

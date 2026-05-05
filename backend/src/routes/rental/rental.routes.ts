@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { RentalControllerService } from "../../controllers/rental/rental.controller.service";
 import { RentalPhotoControllerService } from "../../controllers/rental/rental-photo.controller.service";
+import { PaymentControllerService } from "../../controllers/payment/payment.controller.service";
 import { authMiddleware } from "../../middlewares/auth.moddleware";
 import { tenantMiddleware } from "../../middlewares/tenant.middleware";
 import { checkPermission, checkPermissionAny } from "../../middlewares/permission.middleware";
@@ -12,11 +13,18 @@ export class RentalRoutes {
   private router: Router;
   private controller: RentalControllerService;
   private photoController: RentalPhotoControllerService;
+  private paymentController: PaymentControllerService;
 
-  constructor(router: Router, controller: RentalControllerService, photoController: RentalPhotoControllerService) {
+  constructor(
+    router: Router,
+    controller: RentalControllerService,
+    photoController: RentalPhotoControllerService,
+    paymentController: PaymentControllerService
+  ) {
     this.router = router;
     this.controller = controller;
     this.photoController = photoController;
+    this.paymentController = paymentController;
   }
 
   initRoutes() {
@@ -80,6 +88,15 @@ export class RentalRoutes {
       tenantMiddleware,
       checkPermission("rentals:read"),
       (req: Request<{ id: string }>, res: Response, next: NextFunction) => this.photoController.list(req, res, next)
+    );
+
+    // Payment summary
+    this.router.get(
+      "/:id/payment-summary",
+      authMiddleware,
+      tenantMiddleware,
+      checkPermissionAny("rentals:read", "payments:read"),
+      (req: Request<{ id: string }>, res: Response) => this.paymentController.getPaymentSummary(req, res)
     );
 
     return this.router;

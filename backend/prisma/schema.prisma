@@ -198,7 +198,7 @@ model Payment {
   rentalId  String
   amount    Decimal       @db.Decimal(10, 2)
   method    PaymentMethod
-  type      PaymentType   @default(Payment)
+  type      PaymentType   @default(PagoAlquiler)
   reference String?
   notes     String?
   createdAt DateTime      @default(now())
@@ -279,10 +279,12 @@ enum PaymentMethod {
 }
 
 enum PaymentType {
-  Payment
-  Deposit
-  Refund
-  Extra
+  Deposito
+  PagoAlquiler
+  CobroDano
+  CobroCombustible
+  CobrodiaExtra
+  Devolucion
 }
 
 enum PhotoType {

@@ -68,7 +68,7 @@ export class AppRoutes {
     const rentalCtrl = new RentalControllerService(rentalRepo)
     const rentalPhotoRepo = new RentalPhotoRepository(prisma)
     const rentalPhotoCtrl = new RentalPhotoControllerService(rentalPhotoRepo)
-    const rentalRoutes = new RentalRoutes(Router(), rentalCtrl, rentalPhotoCtrl);
+    const rentalRoutes = new RentalRoutes(Router(), rentalCtrl, rentalPhotoCtrl, paymentCtrl);
 
     // --- configuracon Modulo Tenant ---
     const tenantRepo = new TenantRepository(prisma)
