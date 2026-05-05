@@ -8,10 +8,8 @@ export class ReportRepository implements ReportRepositoryInterface {
   constructor(private readonly prisma: PrismaClient) {}
 
   async getDailySummary(date: string, tenantId?: string): Promise<DailySummaryReport> {
-    const start = new Date(date)
-    start.setHours(0, 0, 0, 0)
-    const end = new Date(date)
-    end.setHours(23, 59, 59, 999)
+    const start = new Date(`${date}T00:00:00.000Z`)
+    const end = new Date(`${date}T23:59:59.999Z`)
 
     const pagos = await this.prisma.payment.findMany({
       where: {
