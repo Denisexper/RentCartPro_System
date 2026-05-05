@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import {
   DialogRoot,
   DialogTrigger,
@@ -25,19 +26,21 @@ const METHOD_LABELS = {
   Check: "Cheque",
 };
 
-const TYPES = ["Payment", "Deposit", "Refund", "Extra"];
+const TYPES = ["Deposito", "PagoAlquiler", "CobroDano", "CobroCombustible", "CobrodiaExtra", "Devolucion"];
 const TYPE_LABELS = {
-  Payment: "Pago",
-  Deposit: "Depósito",
-  Refund: "Reembolso",
-  Extra: "Extra",
+  Deposito: "Depósito",
+  PagoAlquiler: "Pago alquiler",
+  CobroDano: "Cobro daño",
+  CobroCombustible: "Cobro combustible",
+  CobrodiaExtra: "Día extra",
+  Devolucion: "Devolución",
 };
 
 const INITIAL = {
   rentalId: "",
   amount: "",
   method: "Cash",
-  type: "Payment",
+  type: "PagoAlquiler",
   reference: "",
   notes: "",
 };
@@ -67,9 +70,9 @@ function NativeSelect({ value, onChange, options, labels }) {
   );
 }
 
-export function PaymentFormModal({ onSuccess }) {
+export function PaymentFormModal({ onSuccess, rentalId: initialRentalId, compact = false }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState(INITIAL);
+  const [form, setForm] = useState({ ...INITIAL, rentalId: initialRentalId ?? "" });
   const [loading, setLoading] = useState(false);
 
   const { can } = usePermissions();
@@ -113,13 +116,22 @@ export function PaymentFormModal({ onSuccess }) {
 
   function handleOpenChange(val) {
     setOpen(val);
-    if (!val) setForm(INITIAL);
+    if (!val) setForm({ ...INITIAL, rentalId: initialRentalId ?? "" });
   }
 
   return (
     <DialogRoot open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>+ Registrar Pago</Button>
+        {compact ? (
+          <button
+            className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            title="Agregar pago"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        ) : (
+          <Button>+ Registrar Pago</Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
@@ -130,15 +142,23 @@ export function PaymentFormModal({ onSuccess }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field label="Alquiler" required>
-            <Combobox
-              value={form.rentalId}
-              onChange={setDirect("rentalId")}
-              placeholder="Buscar alquiler..."
-              options={activeRentals.map((r) => ({
-                value: r.id,
-                label: `${r.vehicle?.plate} — ${r.client?.firstName} ${r.client?.lastName}`,
-              }))}
-            />
+            {initialRentalId ? (
+              <div className="h-8 w-full rounded-lg border border-border bg-muted/40 px-3 text-sm flex items-center text-muted-foreground">
+                {activeRentals.find((r) => r.id === initialRentalId)
+                  ? `${activeRentals.find((r) => r.id === initialRentalId)?.vehicle?.plate} — ${activeRentals.find((r) => r.id === initialRentalId)?.client?.firstName} ${activeRentals.find((r) => r.id === initialRentalId)?.client?.lastName}`
+                  : "Alquiler preseleccionado"}
+              </div>
+            ) : (
+              <Combobox
+                value={form.rentalId}
+                onChange={setDirect("rentalId")}
+                placeholder="Buscar alquiler..."
+                options={activeRentals.map((r) => ({
+                  value: r.id,
+                  label: `${r.vehicle?.plate} — ${r.client?.firstName} ${r.client?.lastName}`,
+                }))}
+              />
+            )}
           </Field>
 
           {selectedRental && (
