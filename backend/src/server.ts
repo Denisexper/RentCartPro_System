@@ -2,6 +2,7 @@ import { PORT } from "./services/enviroments.service";
 import express, { Request, Response } from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { AppRoutes } from "./routes/app.routes";
 import { ErrorMiddleware } from "./middlewares/error.middleware";
 import { syncPermissions } from "./permissions/sync";
@@ -24,6 +25,7 @@ const loginLimiter = rateLimit({
   message: { msj: "Demasiados intentos de login, espera 1 minuto." },
 });
 
+app.use(helmet());
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
