@@ -49,6 +49,11 @@ import { PermissionRepository } from "../repositories/permission/permission.repo
 import { PermissionControllerService } from "../controllers/permission/permission.controller.service";
 import { PermissionRoutes } from "./permission/permission.routes";
 
+//importaciones modulo reports
+import { ReportRepository } from "../repositories/report/report.repository";
+import { ReportControllerService } from "../controllers/report/report.controller.service";
+import { ReportRoutes } from "./report/report.routes";
+
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
@@ -100,6 +105,11 @@ export class AppRoutes {
     const permissionCtrl = new PermissionControllerService(permissionRepo)
     const permissionRoutes = new PermissionRoutes(Router(), permissionCtrl)
 
+    // --- configuracion Modulo Reports ---
+    const reportRepo = new ReportRepository(prisma)
+    const reportCtrl = new ReportControllerService(reportRepo)
+    const reportRoutes = new ReportRoutes(Router(), reportCtrl)
+
     // --- Definición de Prefijos de Ruta ---
     router.use("/auth", authRoutes.initRoutes());
     router.use("/clients", clientRoutes.initRoutes());
@@ -110,6 +120,7 @@ export class AppRoutes {
     router.use("/tenants", tenantRoutes.initRoutes());
     router.use("/users", userRoutes.initRoutes());
     router.use("/vehicles", vehicleRoutes.initRoutes());
+    router.use("/reports", reportRoutes.initRoutes());
 
     return router;
   }
