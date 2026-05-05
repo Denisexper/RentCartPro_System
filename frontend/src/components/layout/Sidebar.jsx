@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   KeyRound,
   LogOut,
+  BarChart2,
+  AlertCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -19,8 +21,10 @@ const navItems = [
   { to: "/customers", label: "Clientes",           icon: Users,           permission: "clients:read" },
   { to: "/rentals",   label: "Alquileres",         icon: FileText,        permission: "rentals:read" },
   { to: "/payments",  label: "Pagos",              icon: CreditCard,      permission: "payments:read" },
-  { to: "/users",     label: "Usuarios",           icon: UserCog,         permission: "users:read" },
-  { to: "/roles",     label: "Roles y Permisos",   icon: KeyRound,        permission: "roles:manage" },
+  { to: "/users",          label: "Usuarios",           icon: UserCog,       permission: "users:read" },
+  { to: "/roles",          label: "Roles y Permisos",   icon: KeyRound,      permission: "roles:manage" },
+  { to: "/cierre-caja",    label: "Cierre de Caja",     icon: BarChart2,     permission: "reports:read" },
+  { to: "/cuentas-cobrar", label: "Cuentas por Cobrar", icon: AlertCircle,   permission: "reports:read" },
 ];
 
 export default function Sidebar() {
