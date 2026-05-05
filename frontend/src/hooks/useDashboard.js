@@ -6,18 +6,40 @@ import { paymentService } from "@/services/payment.service";
 import { usePermissionsStore } from "@/store/permissionsStore";
 import { useAuthStore } from "@/store/authStore";
 
+const RENTAL_PAYMENT_TYPES = ["Deposito", "PagoAlquiler"];
+
 const getCurrentMonthIncome = (payments) => {
   const now = new Date();
   return payments
     .filter((p) => {
       const created = new Date(p.createdAt);
       return (
-        p.type === "Payment" &&
+        RENTAL_PAYMENT_TYPES.includes(p.type) &&
         created.getMonth() === now.getMonth() &&
         created.getFullYear() === now.getFullYear()
       );
     })
     .reduce((sum, p) => sum + Number(p.amount), 0);
+};
+
+const getPendingBalance = (rentals, payments) => {
+  const activeRentalIds = new Set(
+    rentals.filter((r) => r.status === "Active").map((r) => r.id)
+  );
+
+  const paidByRental = {};
+  for (const p of payments) {
+    if (activeRentalIds.has(p.rentalId) && RENTAL_PAYMENT_TYPES.includes(p.type)) {
+      paidByRental[p.rentalId] = (paidByRental[p.rentalId] ?? 0) + Number(p.amount);
+    }
+  }
+
+  return rentals
+    .filter((r) => r.status === "Active")
+    .reduce((sum, r) => {
+      const paid = paidByRental[r.id] ?? 0;
+      return sum + Math.max(0, Number(r.totalAmount) - paid);
+    }, 0);
 };
 
 const safe = (promise) => promise.catch(() => null);
@@ -52,10 +74,11 @@ export const useDashboard = () => {
         const payments = paymentsRes?.data?.data ?? [];
 
         setStats({
-          totalVehicles: vehiclesRes  ? vehicles.length : null,
-          activeRentals: rentalsRes   ? rentals.filter((r) => r.status === "Active").length : null,
-          totalClients:  clientsRes   ? clients.length : null,
-          monthlyIncome: paymentsRes  ? getCurrentMonthIncome(payments) : null,
+          totalVehicles:  vehiclesRes  ? vehicles.length : null,
+          activeRentals:  rentalsRes   ? rentals.filter((r) => r.status === "Active").length : null,
+          totalClients:   clientsRes   ? clients.length : null,
+          monthlyIncome:  paymentsRes  ? getCurrentMonthIncome(payments) : null,
+          pendingBalance: rentalsRes && paymentsRes ? getPendingBalance(rentals, payments) : null,
         });
       } catch (err) {
         setError("Error al cargar los datos del dashboard");

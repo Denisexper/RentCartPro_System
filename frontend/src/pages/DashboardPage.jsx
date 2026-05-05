@@ -1,4 +1,4 @@
-import { Car, FileText, Users, DollarSign } from "lucide-react";
+import { Car, FileText, Users, DollarSign, AlertCircle } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { useDashboard } from "@/hooks/useDashboard";
 
@@ -31,6 +31,14 @@ const STAT_CARDS = [
     color: "orange",
     format: (v) => `$${Number(v).toFixed(2)}`,
     description: "Pagos recibidos este mes",
+  },
+  {
+    key: "pendingBalance",
+    title: "Saldo Pendiente",
+    icon: AlertCircle,
+    color: "red",
+    format: (v) => `$${Number(v).toFixed(2)}`,
+    description: "Por cobrar en alquileres activos",
   },
 ];
 
